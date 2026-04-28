@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Illuminate — A New Language for Pain</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@400;500;600&family=Rethink+Sans:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#06060e;--surface:rgba(255,255,255,.06);--surface2:rgba(255,255,255,.11);
+  --border:rgba(255,255,255,.10);--border2:rgba(255,255,255,.20);
+  --text:#f0ece8;--text-dim:rgba(240,236,232,.5);--text-mid:rgba(240,236,232,.75);
+  --accent:#9b6dff;--accent2:rgba(155,109,255,.13);--accent-border:rgba(155,109,255,.45);
+  --amber:#e8853a;--rose:#e8607a;--blue:#4a90e8;
+  --fd:'Reem Kufi',Georgia,serif;
+  --fb:'Rethink Sans',system-ui,sans-serif;
+  --ease:cubic-bezier(0.16,1,0.3,1);
+  /* ── spacing scale ── */
+  --sp-xs:clamp(.6rem,1.2vw,.9rem);
+  --sp-sm:clamp(1rem,2vw,1.4rem);
+  --sp-md:clamp(1.8rem,3.5vw,2.5rem);
+  --sp-lg:clamp(2.5rem,5vw,3.5rem);
+  --sp-xl:clamp(3.5rem,7vw,5rem);
+}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--fd);overflow-x:hidden;-webkit-font-smoothing:antialiased;}
+
+/* noise */
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");background-size:128px;opacity:.6;pointer-events:none;z-index:9998;}
+
+/* ── ORB LAYER ── */
+.orbs{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+.orb{position:absolute;border-radius:50%;filter:blur(90px);}
+.o-amber{width:520px;height:520px;background:radial-gradient(circle,#e8853a,transparent 70%);top:-14%;left:-8%;opacity:.42;animation:oa 22s ease-in-out infinite;}
+.o-purple{width:440px;height:440px;background:radial-gradient(circle,#9b6dff,transparent 70%);top:18%;right:-10%;opacity:.32;animation:ob 28s ease-in-out infinite;}
+.o-blue{width:380px;height:380px;background:radial-gradient(circle,#4a90e8,transparent 70%);bottom:-10%;left:20%;opacity:.26;animation:oc 24s ease-in-out infinite;}
+.o-rose{width:260px;height:260px;background:radial-gradient(circle,#e8607a,transparent 70%);top:52%;right:24%;opacity:.22;animation:od 18s ease-in-out infinite;}
+@keyframes oa{0%,100%{transform:translate(0,0)scale(1)}33%{transform:translate(50px,70px)scale(1.08)}66%{transform:translate(-30px,40px)scale(.94)}}
+@keyframes ob{0%,100%{transform:translate(0,0)scale(1)}40%{transform:translate(-68px,50px)scale(1.06)}70%{transform:translate(24px,-34px)scale(.9)}}
+@keyframes oc{0%,100%{transform:translate(0,0)scale(1)}30%{transform:translate(44px,-60px)scale(1.1)}65%{transform:translate(-24px,34px)scale(.88)}}
+@keyframes od{0%,100%{transform:translate(0,0)scale(1)}45%{transform:translate(-48px,-40px)scale(1.12)}80%{transform:translate(34px,24px)scale(.86)}}
+
+/* ── NAV ── */
+nav{position:fixed;top:1.4rem;left:50%;transform:translateX(-50%);z-index:200;display:flex;align-items:center;gap:2rem;padding:.5rem .5rem .5rem 1.4rem;background:rgba(6,6,14,.78);border:1px solid var(--border2);border-radius:9999px;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.05);white-space:nowrap;}
+.nav-logo{font-family:var(--fd);font-style:normal;font-weight:500;font-size:1.05rem;color:var(--text);text-decoration:none;opacity:.9;letter-spacing:.04em;}
+.nav-links{display:flex;gap:1.6rem;list-style:none;}
+.nav-links a{font-family:var(--fb);font-size:.68rem;font-weight:400;letter-spacing:.06em;color:var(--text-dim);text-decoration:none;transition:color .2s;}
+.nav-links a:hover{color:var(--text);}
+.nav-links a.nav-active{color:var(--text);opacity:1;}
+.nav-open{display:flex;align-items:center;gap:.45rem;padding:.48rem .48rem .48rem 1.1rem;background:var(--accent2);border:1px solid var(--accent-border);border-radius:9999px;font-family:var(--fb);font-size:.68rem;font-weight:400;letter-spacing:.08em;color:var(--accent);text-decoration:none;transition:all .25s;}
+.nav-open:hover{background:rgba(155,109,255,.22);color:var(--text);}
+.nav-open-icon{width:22px;height:22px;display:flex;align-items:center;justify-content:center;background:rgba(155,109,255,.2);border-radius:50%;font-size:.7rem;}
+@media(max-width:680px){.nav-links{display:none;}}
+
+/* ── SHARED SECTION ── */
+.wrap{max-width:1080px;margin:0 auto;padding:0 clamp(1.4rem,6vw,4rem);}
+section{position:relative;z-index:1;}
+.section-pad{padding:clamp(4rem,9vw,7rem) 0;}
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .9s var(--ease),transform .9s var(--ease);}
+.reveal.in{opacity:1;transform:none;}
+.d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}
+.label{font-family:var(--fb);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text-dim);display:flex;align-items:center;gap:.6rem;margin-bottom:2rem;}
+.label::before{content:'';display:block;width:18px;height:1px;background:var(--text-dim);}
+h2{font-family:var(--fd);font-style:normal;font-weight:500;font-size:clamp(1.8rem,3.8vw,2.8rem);line-height:1.2;letter-spacing:.01em;color:var(--text);text-wrap:balance;}
+p.body{font-family:var(--fb);font-weight:300;font-size:clamp(.95rem,1.5vw,1.1rem);line-height:1.85;color:var(--text-mid);max-width:62ch;}
+.rule{display:none;}
+
+/* ── HERO ── */
+#hero{min-height:100dvh;display:flex;align-items:center;justify-content:center;overflow:hidden;text-align:center;}
+.hero-left{padding:clamp(5rem,10vw,8rem) clamp(1.4rem,7vw,5rem) clamp(4rem,8vw,6rem);display:flex;flex-direction:column;align-items:center;gap:1.5rem;position:relative;z-index:2;max-width:1000px;width:100%;}
+h1.hero-title{font-size:clamp(4.5rem,13vw,10.5rem);font-style:normal;font-weight:400;line-height:.95;letter-spacing:.01em;white-space:nowrap;animation:titleGlow 4s ease-in-out infinite;}
+@keyframes titleGlow{
+  0%,100%{text-shadow:0 0 60px rgba(232,133,58,.12),0 0 120px rgba(232,133,58,.06),0 0 200px rgba(232,100,40,.04);}
+  50%{text-shadow:0 0 80px rgba(232,133,58,.6),0 0 160px rgba(232,133,58,.3),0 0 280px rgba(220,90,30,.18),0 0 40px rgba(255,180,80,.35);}
+}
+.hero-sub{font-family:var(--fb);font-style:italic;font-weight:300;font-size:clamp(1rem,1.8vw,1.2rem);color:var(--text-mid);max-width:36ch;line-height:1.6;}
+.hero-btn{display:inline-flex;align-items:center;gap:.55rem;padding:.65rem .65rem .65rem 1.4rem;background:rgba(155,109,255,.12);border:1px solid var(--accent-border);border-radius:9999px;font-family:var(--fb);font-size:.7rem;letter-spacing:.1em;color:var(--accent);text-decoration:none;transition:all .25s;}
+.hero-btn:hover{background:rgba(155,109,255,.22);color:var(--text);}
+.hero-btn span{width:24px;height:24px;display:flex;align-items:center;justify-content:center;background:rgba(155,109,255,.2);border-radius:50%;}
+/* ── SCROLL INDICATOR ── */
+.scroll-hint{position:absolute;bottom:2.2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.65rem;z-index:2;transition:opacity .6s;cursor:pointer;animation:scrollBob 2.6s ease-in-out infinite;}
+.scroll-hint.hidden{opacity:0;pointer-events:none;}
+.scroll-hint-label{font-family:var(--fb);font-size:.78rem;letter-spacing:.22em;text-transform:uppercase;color:var(--text-mid);}
+.scroll-hint-track{width:1px;height:48px;background:rgba(240,236,232,.12);position:relative;overflow:hidden;border-radius:1px;}
+.scroll-hint-dot{position:absolute;top:-6px;left:0;width:1px;height:10px;background:linear-gradient(to bottom,transparent,var(--text-dim));animation:scrollDot 1.8s ease-in-out infinite;border-radius:1px;}
+@keyframes scrollDot{0%{top:-10px;opacity:0}20%{opacity:1}80%{opacity:1}100%{top:48px;opacity:0}}
+@keyframes scrollBob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(7px)}}
+
+/* ── INTRO TWO-COL ── */
+.intro-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(3rem,7vw,6rem);align-items:start;}
+@media(max-width:720px){.intro-grid{grid-template-columns:1fr;}}
+.woolf-quote{font-family:var(--fb);font-style:italic;font-weight:300;font-size:clamp(1rem,2vw,1.4rem);line-height:1.78;color:var(--text);letter-spacing:.005em;}
+.woolf-cite{margin-top:1.2rem;font-family:var(--fb);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);}
+/* ── PAIN UNIVERSAL ── */
+.universal-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(3rem,7vw,6rem);align-items:start;margin-top:var(--sp-xl);}
+@media(max-width:720px){.universal-grid{grid-template-columns:1fr;}}
+.pain-universal{font-family:var(--fd);font-style:normal;font-weight:500;font-size:clamp(1.8rem,4vw,2.2rem);line-height:1.15;color:var(--text);letter-spacing:.01em;}
+
+/* ── BIO SECTION ── */
+#bio .two-col{display:grid;grid-template-columns:1fr 1fr;gap:clamp(3rem,7vw,6rem);align-items:start;}
+@media(max-width:720px){#bio .two-col{grid-template-columns:1fr;}}
+.biopsych{display:flex;flex-direction:column;align-items:center;gap:1.2rem;padding:2.5rem;border:1px solid var(--border);background:rgba(255,255,255,.02);}
+.biopsych-rings{position:relative;width:200px;height:180px;flex-shrink:0;}
+.biopsych-rings svg{width:100%;height:100%;}
+.biopsych-label{font-family:var(--fb);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);text-align:center;line-height:1.7;}
+
+/* ── WOMEN SECTION ── */
+.stat-pair{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);margin-top:var(--sp-md);}
+@media(max-width:560px){.stat-pair{grid-template-columns:1fr;}}
+.stat-cell{padding:2rem;background:var(--bg);transition:background .3s;}
+.stat-cell:hover{background:var(--surface);}
+.stat-num{font-family:var(--fd);font-style:normal;font-weight:500;font-size:clamp(2.4rem,5vw,3.8rem);line-height:1;letter-spacing:.01em;color:var(--text);margin-bottom:.5rem;}
+.stat-desc{font-family:var(--fb);font-size:.76rem;font-weight:300;line-height:1.65;color:var(--text-mid);}
+sup.ref{font-family:var(--fb);font-size:.52rem;color:var(--accent);opacity:.7;vertical-align:super;margin-left:1px;}
+.endo-box{margin-top:var(--sp-md);padding:2rem;border:1px solid var(--border);border-left:2px solid rgba(155,109,255,.35);}
+.endo-box p+p{margin-top:.8rem;}
+.not-normal{margin-top:2.5rem;font-family:var(--fd);font-style:normal;font-weight:500;font-size:clamp(1.5rem,2.8vw,2.2rem);line-height:1.3;color:var(--text);}
+
+/* ── PIVOT ── */
+#pivot{background:rgba(255,255,255,.015);}
+.pivot-row-top{display:grid;grid-template-columns:1fr 2fr;gap:clamp(2rem,5vw,4rem);align-items:center;margin-top:var(--sp-md);}
+.pivot-row-bottom{display:grid;grid-template-columns:3fr 2fr;gap:clamp(2rem,5vw,4rem);align-items:center;margin-top:var(--sp-lg);}
+.pivot-scale-img{width:100%;display:block;}
+@media(max-width:720px){.pivot-row-top,.pivot-row-bottom{grid-template-columns:1fr;}}
+.pivot-label-sm{font-family:var(--fb);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:1rem;}
+.pivot-img{width:100%;display:block;}
+.pivot-canvas-wrap{position:relative;overflow:hidden;}
+.pivot-photo-grid{display:flex;flex-direction:column;gap:6px;}
+.pivot-photo-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.pivot-photo-row img{width:100%;display:block;object-fit:cover;height:240px;}
+.pivot-photo-full img{width:100%;display:block;object-fit:cover;object-position:top center;height:200px;}
+/* What-if questions */
+.whatif-qs{margin-top:var(--sp-xl);display:flex;flex-direction:column;gap:var(--sp-md);align-items:center;max-width:680px;margin-left:auto;margin-right:auto;}
+.whatif-q{font-family:var(--fd);font-style:normal;font-weight:400;font-size:clamp(1.1rem,2.2vw,1.5rem);line-height:1.5;color:var(--text);text-align:center;padding-left:0;border-left:none;}
+
+/* ── TOOL SECTION ── */
+#illuminate{}
+.dimensions{display:flex;flex-wrap:wrap;gap:.6rem;margin:1.8rem 0 2.5rem;}
+.dim-tag{padding:.35rem .9rem;border:1px solid var(--border2);border-radius:9999px;font-family:var(--fb);font-size:.68rem;letter-spacing:.08em;color:var(--text-mid);background:var(--surface);}
+.tool-desc{font-family:var(--fb);font-style:normal;font-weight:300;font-size:clamp(.88rem,1.3vw,1rem);line-height:1.9;color:var(--text-mid);max-width:74ch;margin-top:var(--sp-md);}
+
+/* ── SANDBOX ── */
+#sandbox{width:100%;background:#05050d;position:relative;}
+.sb-inner{display:flex;height:clamp(420px,70vh,680px);position:relative;}
+.sb-canvas-wrap{flex:1;position:relative;overflow:hidden;min-width:0;background:#05050d;}
+#sb-canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:crosshair;}
+.sb-body-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen;object-fit:contain;object-position:center;opacity:.35;}
+.sb-canvas-wrap::after{content:'';position:absolute;inset:0;background:rgba(5,5,13,.38);pointer-events:none;z-index:0;}
+/* Toolbar */
+.sb-toolbar{display:flex;flex-direction:column;gap:4px;align-items:center;flex-shrink:0;width:46px;background:rgba(6,6,14,.96);border-left:1px solid var(--border);padding:10px 5px;transition:transform .2s ease;z-index:2001;position:relative;}
+.sb-toolbar.help-open{transform:translateX(-240px);}
+.sb-tbtn{width:32px;height:32px;border-radius:7px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.4);transition:background .15s,color .15s;position:relative;}
+.sb-tbtn:hover{background:rgba(255,255,255,.08);color:rgba(255,255,255,.8);}
+.sb-tbtn.active{background:rgba(155,109,255,.18);color:#c4aaff;}
+.sb-tbtn svg{width:15px;height:15px;stroke-width:1.6;}
+.sb-ttooltip{position:absolute;right:calc(100% + 8px);top:50%;transform:translateY(-50%);background:rgba(10,10,20,.92);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:4px 9px;font-family:var(--fb);font-size:.62rem;letter-spacing:.06em;color:rgba(255,255,255,.7);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;}
+.sb-tbtn:hover .sb-ttooltip{opacity:1;}
+.sb-tdiv{width:20px;height:1px;background:rgba(255,255,255,.08);margin:3px 0;}
+/* Help panel */
+#sb-help-panel{position:fixed;width:240px;background:rgba(6,6,14,.96);border:1px solid var(--border);border-right:none;border-radius:10px 0 0 10px;z-index:2000;opacity:0;pointer-events:none;transform:translateX(10px);transition:opacity .2s ease,transform .2s ease;overflow:hidden;}
+#sb-help-panel.open{opacity:1;pointer-events:auto;transform:translateX(0);}
+#sb-help-inner{position:relative;width:100%;height:100%;}
+#sb-help-track{position:absolute;top:0;left:0;width:100%;}
+.sb-hb{position:absolute;left:10px;right:16px;background:rgba(14,11,28,.97);border:1px solid rgba(155,109,255,.28);border-radius:8px;padding:7px 11px;font-family:var(--fb);font-size:10px;color:var(--text-mid);line-height:1.5;}
+.sb-hb::before{content:'';position:absolute;right:-8px;top:50%;transform:translateY(-50%);border:7px solid transparent;border-left-color:rgba(155,109,255,.28);border-right:none;}
+.sb-hb::after{content:'';position:absolute;right:-6px;top:50%;transform:translateY(-50%);border:6px solid transparent;border-left-color:rgba(14,11,28,.97);border-right:none;}
+.sb-tbtn.help-active{background:rgba(155,109,255,.18);color:#c4aaff;}
+.sb-panel{width:210px;flex-shrink:0;background:rgba(6,6,14,.96);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.sb-scroll{flex:1;overflow-y:auto;overflow-x:hidden;padding:12px 0 8px;}
+.sb-scroll::-webkit-scrollbar{width:2px;}.sb-scroll::-webkit-scrollbar-thumb{background:var(--border);}
+.sb-s{padding:0 12px;margin-bottom:2px;}
+.sb-lbl{font-family:var(--fb);font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text-mid);display:block;margin-bottom:6px;font-weight:400;}
+.sb-div{height:1px;background:var(--border);margin:10px 12px;}
+/* layer list */
+.sb-ll{display:flex;flex-direction:column;gap:3px;max-height:130px;overflow-y:auto;margin-bottom:6px;}
+.sb-ll::-webkit-scrollbar{width:2px;}.sb-ll::-webkit-scrollbar-thumb{background:var(--border);}
+.sb-lr{display:flex;align-items:center;gap:5px;padding:5px 7px;border-radius:7px;border:1px solid transparent;cursor:pointer;transition:all .18s;}
+.sb-lr:hover{background:var(--surface);}
+.sb-lr.sel{background:var(--surface2);border-color:var(--border);}
+.sb-lsw{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.sb-ln{font-family:var(--fb);font-size:.65rem;letter-spacing:.02em;color:var(--text-mid);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sb-lr.sel .sb-ln{color:var(--text);}
+.sb-ldel{font-size:.6rem;color:var(--text-dim);cursor:pointer;padding:2px 3px;border-radius:3px;opacity:.5;transition:all .18s;border:none;background:none;}
+.sb-ldel:hover{opacity:1;color:var(--rose);background:rgba(232,96,122,.1);}
+.sb-alb{width:100%;padding:6px;border-radius:7px;border:1px dashed var(--border);background:transparent;color:var(--text-mid);font-family:var(--fb);font-size:.6rem;letter-spacing:.1em;cursor:pointer;transition:all .2s;text-transform:uppercase;}
+.sb-alb:hover{border-color:var(--border2);color:var(--text);background:var(--surface);}
+/* color */
+.sb-ctrig{width:100%;padding:7px 10px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:var(--text-mid);font-family:var(--fb);font-size:.65rem;letter-spacing:.04em;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:7px;}
+.sb-ctrig:hover{background:var(--surface2);}
+.sb-cprev{width:13px;height:13px;border-radius:50%;flex-shrink:0;}
+.sb-cpal{display:none;flex-direction:column;align-items:center;gap:7px;margin-top:6px;padding:8px;background:var(--surface);border:1px solid var(--border);border-radius:8px;}
+.sb-cpal.open{display:flex;}
+.sb-cwheel{border-radius:50%;cursor:crosshair;display:block;box-shadow:0 0 0 1px rgba(255,255,255,.08);}
+/* sliders */
+.sb-sr{display:flex;align-items:center;gap:7px;}
+.sb-sv{font-family:var(--fb);font-size:.62rem;color:var(--text-dim);min-width:22px;text-align:right;}
+input[type=range]{flex:1;height:2px;-webkit-appearance:none;appearance:none;background:var(--border2);border-radius:2px;outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:var(--text);cursor:pointer;transition:transform .15s;}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2);}
+/* toggles */
+.sb-tr{display:flex;align-items:center;justify-content:space-between;}
+.sb-tl{font-family:var(--fb);font-size:.65rem;letter-spacing:.03em;color:var(--text-mid);}
+.sb-tsw{position:relative;width:32px;height:18px;cursor:pointer;flex-shrink:0;}
+.sb-tsw input{display:none;}
+.sb-ttr{position:absolute;inset:0;background:rgba(255,255,255,.15);border-radius:20px;transition:background .22s;}
+.sb-tsw input:checked+.sb-ttr{background:var(--accent);}
+.sb-tth{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:white;transition:transform .22s;box-shadow:0 1px 3px rgba(0,0,0,.4);}
+.sb-tsw input:checked~.sb-tth{transform:translateX(14px);}
+.sb-mso{display:none;flex-direction:column;gap:6px;padding:7px;background:var(--surface);border-radius:6px;border:1px solid var(--border);margin-top:1px;}
+.sb-mso.open{display:flex;}
+/* hint */
+.sb-hint{padding:0 12px 10px;font-family:var(--fb);font-size:.6rem;color:var(--text-dim);line-height:1.6;letter-spacing:.03em;}
+
+/* ── MEANING SECTION ── */
+.meaning-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(2rem,6vw,5rem);margin-top:var(--sp-md);}
+@media(max-width:720px){.meaning-grid{grid-template-columns:1fr;}}
+.meaning-col h3{font-family:var(--fd);font-style:normal;font-weight:500;font-size:1.15rem;color:var(--text);margin-bottom:1.2rem;letter-spacing:.02em;}
+.meaning-list{list-style:none;display:flex;flex-direction:column;gap:.9rem;}
+.meaning-list li{font-family:var(--fb);font-size:.78rem;font-weight:300;line-height:1.7;color:var(--text-mid);padding-left:1rem;position:relative;}
+.meaning-list li::before{content:'';position:absolute;left:0;top:.55em;width:4px;height:4px;border-radius:50%;background:var(--accent);opacity:.6;}
+.scarry{margin-top:var(--sp-xl);padding:2.5rem;border:1px solid var(--border);border-left:2px solid rgba(155,109,255,.4);}
+.scarry blockquote{font-family:var(--fb);font-style:italic;font-weight:300;font-size:clamp(1.05rem,2vw,1.3rem);line-height:1.65;color:var(--text);}
+.scarry cite{display:block;margin-top:1rem;font-family:var(--fb);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-dim);font-style:normal;}
+.bridge{margin-top:var(--sp-md);}
+
+/* ── DATA SECTION ── */
+#data{background:rgba(255,255,255,.015);}
+.data-frames{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-top:var(--sp-md);}
+@media(max-width:860px){.data-frames{grid-template-columns:1fr;}}
+.data-frame{background:var(--bg);display:flex;flex-direction:column;}
+.data-frame-canvas{position:relative;background:#04040c;overflow:hidden;}
+.data-frame-canvas canvas{display:block;width:100%;height:280px;}
+.data-frame-body-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;mix-blend-mode:screen;object-fit:contain;object-position:center;opacity:.28;}
+.data-frame-ui{display:flex;height:100%;}
+.data-frame-panel{width:96px;flex-shrink:0;background:rgba(6,6,14,.95);border-left:1px solid var(--border);padding:8px 7px;display:flex;flex-direction:column;gap:4px;}
+.frame-layer{display:flex;align-items:center;gap:5px;}
+.frame-layer-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.frame-layer-name{font-family:var(--fb);font-size:.52rem;color:var(--text-mid);letter-spacing:.03em;line-height:1.3;}
+.data-frame-meta{padding:.8rem 1rem;border-top:1px solid var(--border);}
+.data-frame-note{font-style:italic;font-size:.78rem;color:var(--text-mid);line-height:1.55;}
+.quotes-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:var(--sp-md);}
+@media(max-width:640px){.quotes-grid{grid-template-columns:1fr;}}
+.pquote{padding:2rem 1.8rem;border:1px solid var(--border);background:var(--bg);text-align:center;}
+.pquote blockquote{font-family:var(--fd);font-style:normal;font-weight:100;font-size:clamp(1.2rem,2.2vw,1rem);line-height:1.5;color:var(--text);}
+.pquote cite{display:block;margin-top:1.2rem;font-family:var(--fb);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);font-style:normal;}
+
+/* ── FUTURE SECTION ── */
+.future-list{display:flex;flex-direction:column;gap:0;border:1px solid var(--border);margin-top:var(--sp-md);}
+.future-item{padding:1.4rem 1.8rem;border-bottom:1px solid var(--border);font-family:var(--fb);font-size:clamp(.88rem,1.3vw,1rem);font-weight:300;line-height:1.9;color:var(--text-mid);transition:background .25s;}
+.future-item:last-child{border-bottom:none;}
+.future-item:hover{background:var(--surface);}
+.coming-soon{margin-top:var(--sp-lg);padding:2rem;border:1px solid var(--accent-border);background:var(--accent2);}
+.coming-soon-label{font-family:var(--fb);font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem;display:block;opacity:.8;}
+.coming-soon-item{font-family:var(--fd);font-style:normal;font-weight:400;font-size:clamp(1rem,1.8vw,1.2rem);color:var(--text);line-height:1.6;}
+.coming-soon-item+.coming-soon-item{margin-top:.5rem;}
+
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--border);padding:clamp(2.5rem,5vw,3.5rem) 0;position:relative;z-index:1;}
+.footer-inner{max-width:1080px;margin:0 auto;padding:0 clamp(1.4rem,6vw,4rem);display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:2rem;}
+.footer-logo{font-family:var(--fd);font-style:normal;font-weight:500;font-size:1.1rem;color:var(--text);opacity:.7;display:block;margin-bottom:.3rem;}
+.footer-by{font-family:var(--fb);font-size:.62rem;color:var(--text-dim);letter-spacing:.06em;line-height:1.7;}
+.footer-refs{max-width:440px;}
+.refs-label{font-family:var(--fb);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);margin-bottom:.7rem;display:block;opacity:.6;}
+.ref-item{font-family:var(--fb);font-size:.6rem;font-weight:300;line-height:1.8;color:var(--text-dim);opacity:.65;}
+
+/* ── HERO V2 ── */
+.hero-sub2{font-family:var(--fb);font-size:clamp(.7rem,1.1vw,.82rem);font-weight:300;color:var(--text-dim);letter-spacing:.12em;text-transform:uppercase;opacity:.6;margin-top:.4rem;}
+
+/* ── PAIN SECTION REDESIGN ── */
+.pain-intro-grid{display:grid;grid-template-columns:1fr 0.32fr;gap:clamp(2rem,5vw,4rem);align-items:center;margin-top:var(--sp-lg);}
+@media(max-width:720px){.pain-intro-grid{grid-template-columns:1fr;}}
+.pain-section-heading{font-family:var(--fd);font-style:normal;font-weight:500;font-size:clamp(1.2rem,2.2vw,1.7rem);line-height:1.3;color:var(--text);letter-spacing:.01em;}
+.pain-image{width:100%;display:block;border-radius:4px;}
+.pain-body-text{font-family:var(--fb);font-weight:300;font-size:clamp(.88rem,1.3vw,1rem);line-height:1.9;color:var(--text-mid);margin-top:var(--sp-sm);}
+.pain-body-text+.pain-body-text{margin-top:var(--sp-sm);}
+.pain-body-text+.pain-section-heading{margin-top:var(--sp-lg);}
+.scarry+.pain-body-text{margin-top:var(--sp-md);}
+.lang-grid{display:grid;grid-template-columns:1fr 0.32fr;gap:clamp(2rem,5vw,4rem);align-items:center;margin-top:var(--sp-lg);}
+@media(max-width:720px){.lang-grid{grid-template-columns:1fr;}}
+.painscale-img{width:100%;display:block;}
+.point-pain-img{width:48%;display:block;}
+.pain-scale-q{font-family:var(--fb);font-style:italic;font-weight:300;font-size:clamp(.88rem,1.3vw,1rem);color:var(--text-dim);margin-top:var(--sp-xs);}
+.your-pain-quote{font-family:var(--fd);font-style:normal;font-weight:500;font-size:clamp(2rem,4.5vw,3.4rem);line-height:1.2;color:var(--text);margin-top:var(--sp-lg);margin-bottom:var(--sp-sm);}
+.color-dots-row{display:flex;gap:clamp(.7rem,1.8vw,1.2rem);align-items:center;margin:var(--sp-md) 0;}
+.color-dot-lg{width:clamp(26px,3.5vw,40px);height:clamp(26px,3.5vw,40px);border-radius:50%;flex-shrink:0;}
+
+/* ── TOOL / NEW-LANGUAGE SECTION ── */
+#new-language{}
+.new-lang-headline{font-family:var(--fd);font-style:normal;font-weight:500;font-size:clamp(2rem,4.5vw,3.4rem);line-height:1.2;color:var(--text);margin-bottom:var(--sp-sm);}
+.new-lang-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:var(--sp-md);}
+@media(max-width:640px){.new-lang-grid{grid-template-columns:1fr;}}
+.new-lang-photo{width:100%;display:block;object-fit:cover;height:340px;}
+.visual-tools-label{font-family:var(--fd);font-style:normal;font-weight:500;font-size:clamp(1.2rem,2.2vw,1.7rem);color:var(--text);margin-bottom:var(--sp-xs);}
+.longitudinal-text{font-family:var(--fb);font-weight:300;font-size:clamp(.88rem,1.3vw,1rem);line-height:1.9;color:var(--text-mid);margin-top:var(--sp-md);max-width:74ch;}
+.clinical-data-heading{font-family:var(--fd);font-style:normal;font-weight:500;font-size:clamp(1.5rem,2.8vw,2.2rem);line-height:1.2;color:var(--text);margin-top:0;}
+
+/* ── TWO SIDES SECTION ── */
+#two-sides{}
+.flip-card{perspective:2000px;width:100%;cursor:pointer;margin-top:var(--sp-md);}
+.flip-card-inner{position:relative;width:100%;transition:transform .9s cubic-bezier(0.16,1,0.3,1);transform-style:preserve-3d;}
+.flip-card.flipped .flip-card-inner{transform:rotateY(180deg);}
+.flip-card-face{backface-visibility:hidden;-webkit-backface-visibility:hidden;padding:3rem 3.5rem;border:1px solid var(--border);background:var(--surface);}
+.flip-card-back{transform:rotateY(180deg);position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(155,109,255,.07);border:1px solid var(--accent-border);}
+.flip-card-face h3{font-family:var(--fd);font-style:normal;font-weight:500;font-size:clamp(1.3rem,2.5vw,2rem);color:var(--text);margin-bottom:1.8rem;letter-spacing:.01em;}
+.two-sides-list{list-style:none;display:flex;flex-direction:column;gap:1.1rem;}
+.two-sides-list li{font-family:var(--fb);font-size:clamp(.82rem,1.2vw,.95rem);font-weight:300;line-height:1.8;color:var(--text-mid);padding-left:1.2rem;position:relative;}
+.two-sides-list li::before{content:'';position:absolute;left:0;top:.65em;width:4px;height:4px;border-radius:50%;background:var(--accent);opacity:.6;}
+.flip-hint{font-family:var(--fb);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--text-dim);text-align:center;margin-top:1.2rem;opacity:.5;display:flex;align-items:center;justify-content:center;gap:.5rem;}
+.flip-hint-icon{display:inline-block;animation:spinHint 2.8s ease-in-out infinite;opacity:.7;}
+@keyframes spinHint{0%,60%,100%{transform:rotate(0deg)}30%{transform:rotate(180deg)}}
+.two-sides-header{font-family:var(--fd);font-style:normal;font-weight:500;font-size:clamp(1.5rem,3vw,2.4rem);letter-spacing:.06em;text-transform:uppercase;color:var(--text);margin-bottom:2rem;text-align:center;}
+@keyframes cardPeek{0%{transform:rotateY(0deg)}40%{transform:rotateY(22deg)}70%{transform:rotateY(-4deg)}100%{transform:rotateY(0deg)}}
+.flip-card.peek .flip-card-inner{animation:cardPeek 1.1s cubic-bezier(0.16,1,0.3,1) forwards;}
+</style>
+</head>
+<body>
+
+<!-- ══ NAV ══ -->
+<nav aria-label="Site navigation">
+  <a href="#hero" class="nav-logo">Illuminate</a>
+  <ul class="nav-links">
+    <li><a href="#pain">The Context</a></li>
+    <li><a href="#pivot">A New Language</a></li>
+    <li><a href="#new-language">A New Dataset</a></li>
+    <li><a href="#illuminate">The Tool</a></li>
+    <li><a href="#two-sides">The Future</a></li>
+  </ul>
+  <a href="https://illuminatepaintings.vercel.app" target="_blank" rel="noopener" class="nav-open">
+    Try Illuminate <span aria-hidden="true">↗</span>
+  </a>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section id="hero" aria-label="Illuminate">
+  <div class="orbs" aria-hidden="true">
+    <div class="orb o-amber"></div><div class="orb o-purple"></div>
+    <div class="orb o-blue"></div><div class="orb o-rose"></div>
+  </div>
+  <div class="hero-left">
+    <h1 class="hero-title">Illuminate</h1>
+    <p class="hero-sub">A new language for pain</p>
+    <p class="hero-sub2">MS Design Thesis &nbsp;·&nbsp; Work by Rishika Gundi</p>
+    <a href="https://illuminatepaintings.vercel.app" target="_blank" rel="noopener" class="hero-btn">
+      Try Illuminate <span aria-hidden="true">↗</span>
+    </a>
+  </div>
+  <div class="scroll-hint" id="scroll-hint" onclick="document.querySelector('#pain').scrollIntoView({behavior:'smooth'})">
+    <span class="scroll-hint-label">Learn more</span>
+    <div class="scroll-hint-track"><div class="scroll-hint-dot"></div></div>
+  </div>
+</section>
+
+<hr class="rule"/>
+
+<!-- ══ PAIN / PROBLEM ══ -->
+<section id="pain" class="section-pad">
+  <div class="wrap">
+
+    <!-- Pain is rich with nuance + 3D image -->
+    <div class="pain-intro-grid">
+      <div class="reveal">
+        <p class="pain-section-heading">Pain is rich with nuance, context &amp; meaning.</p>
+        <p class="pain-body-text">The experience of pain is not purely dictated by stimulus and response. In addition to biological &amp; physiological factors, it is also influenced by psychology, behavior, social context and culture. These components play a role in how the brain interprets and modulates the signals it receives.</p>
+      </div>
+      <div class="reveal d1">
+        <img src="3D pain.jpeg" alt="3D visualization of pain dimensions" class="pain-image"/>
+      </div>
+    </div>
+
+    <!-- Language flattens the experience -->
+    <div class="lang-grid">
+      <div class="reveal">
+        <p class="pain-section-heading">Language flattens the experience</p>
+        <p class="pain-body-text">Language is an imperfect tool to describe sensation. We rely on metaphors of weapons: stabbing, hammering, prickling, to describe pain. This creates a negative relationship with pain that only worsens its experience. Even then, pain cannot be wholly described, especially within a healthcare system facing burnout, where the time to listen to patient stories is scarce.</p>
+      </div>
+      <div class="reveal d1">
+        <img src="2D pain.png" alt="Pain as data points" class="painscale-img"/>
+      </div>
+    </div>
+
+    <!-- The pain scale turns it into a singular point -->
+    <div class="lang-grid">
+      <div class="reveal d1">
+        <p class="pain-section-heading">The pain scale turns it into a singular point.</p>
+        <p class="pain-scale-q">How can we assign an objective measure to an inherently subjective experience?</p>
+      </div>
+      <div class="reveal d2">
+        <img src="point.png" alt="A single point — pain reduced to one number" class="point-pain-img"/>
+      </div>
+    </div>
+
+    <!-- Virginia Woolf quote -->
+    <div class="scarry reveal d2">
+      <blockquote>"English, which can express the thoughts of Hamlet and the tragedy of Lear, has no words for the shiver and the headache. It has all grown one way. The merest schoolgirl, when she falls in love, has Shakespeare or Keats to speak her mind for her; but let a sufferer try to describe a pain in his head to a doctor and language at once runs dry."</blockquote>
+      <cite>Virginia Woolf, On Being Ill</cite>
+    </div>
+
+    <!-- Body text after Woolf -->
+    <p class="pain-body-text reveal d1">Pain is more than just a feeling neatly rated between 1 and 10. It holds important nuances in sensation, experience and meaning. The ways in which we describe pain and other symptoms today leaves these experiences susceptible to minimization, dismissal and misdiagnosis.</p>
+
+    <!-- Your pain is normal -->
+    <p class="pain-section-heading">"Your pain is normal."</p>
+    <p class="pain-body-text reveal d1">Endometriosis exemplifies how the system fails when it comes to pain.</p>
+
+    <!-- Stats -->
+    <div class="stat-pair reveal d1">
+      <div class="stat-cell">
+        <div class="stat-num">1 in 10<sup class="ref">[1,2]</sup></div>
+        <div class="stat-desc">Women experience endometriosis</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">9 years<sup class="ref">[1]</sup></div>
+        <div class="stat-desc">Average diagnostic delay</div>
+      </div>
+    </div>
+
+    <!-- More endo body text -->
+    <p class="pain-body-text reveal d1">The condition is characterized by intense cyclic and progressive pain, often misdiagnosed as period cramps or IBS. Most, if not all, women with endometriosis have been told at some point that their pain is 'normal'.</p>
+    <p class="pain-body-text reveal d2">The system tells women that excruciating, nauseating pain is normal. Despite its prevalence, endometriosis has no effective cures. Nevertheless, getting just a diagnosis has been described as life-changing for the women that receive it, because their pain is finally validated, free from a system of medical gaslighting. But that diagnosis takes an average of 9 years. This cannot be explained by scientific slowness alone; it reflects systemic disbelief and a cultural pattern of ignoring and minimizing pain. </p>
+    <p class="pain-body-text reveal d3"> The 1-10 scale is definitely plays a role in this.</p>
+  </div>
+</section>
+ 
+
+<hr class="rule"/>
+
+<!-- ══ PIVOT ══ -->
+<section id="pivot" class="section-pad">
+  <div class="wrap">
+   <!-- Pain is universal -->
+   <p class="pain-universal reveal">Pain is universal. The language to share it is not.</p>
+    <!-- Row 1: heading + scale image -->
+    <div class="pivot-row-top">
+      <p class="pain-section-heading reveal">So what if this scale</p>
+      <img src="pain scale 3.jpg" alt="Standard 0-10 pain scale" class="pivot-scale-img reveal d1"/>
+    </div>
+
+    <!-- Row 2: photos + "looked more like this?" -->
+    <div class="pivot-row-bottom">
+      <div class="pivot-photo-grid reveal d1">
+        <div class="pivot-photo-row">
+          <img src="Gundi_Rishika_invisible1.jpg" alt="Projection mapping on face" />
+          <img src="Gundi_Rishika_invisible2.jpg" alt="Projection mapping on back" />
+        </div>
+        <div class="pivot-photo-full">
+          <img src="Gundi_Rishika_invisible7.jpg" alt="Projection mapping full body" style="object-position:center 30%;"/>
+        </div>
+      </div>
+      <p class="pain-section-heading reveal d2">Looked more like this?</p>
+    </div>
+
+    <div class="whatif-qs">
+      <p class="whatif-q reveal d1">What if there were ways to enable humans to access more nuanced, embodied representations of pain?</p>
+      <p class="whatif-q reveal d1">What if patient expression could become a diagnostic aid rather than a barrier?</p>
+      <p class="whatif-q reveal d1">What are ways to shift the experience of patient advocacy from a fight against the system to one of care and trust?</p>
+    </div>
+  </div>
+</section>
+
+<hr class="rule"/>
+
+<!-- ══ NEW LANGUAGE / DATASET ══ -->
+<section id="new-language" class="section-pad">
+  <div class="wrap">
+
+    <!-- Pain needs a new language -->
+    <p class="new-lang-headline reveal">Pain needs a new language.</p>
+        <!-- Preliminary Data label — directly below -->
+        <div style="max-width:1080px;margin:0 auto 1rem;padding:0 clamp(1.4rem,6vw,4rem);display:flex;align-items:baseline;gap:2rem;flex-wrap:wrap;">
+          <p class="label reveal">Preliminary Data</p>
+        </div>
+    <p class="body reveal d1" style="max-width:74ch;">ILLUMINATE creates a new visual language for the communication and documentation of pain. It breaks down the dimensions of pain (spatial, temporal, movement, intensity, etc.) and allows users to pinpoint and map nuance in a way that words and numbers alone cannot. Different sensations have different qualities and meaning, each of which can be expressed and understood.</p>
+
+
+
+    <!-- Elaine Scarry quote -->
+    <div class="scarry reveal d1">
+      <blockquote>"The success of the physician's work will often depend on the acuity with which he, or she can hear the fragmentary language of pain, coax it into clarity, and interpret it."</blockquote>
+      <cite>Elaine Scarry, The Body in Pain</cite>
+    </div>
+
+    <!-- Data frames -->
+    <div class="data-frames reveal d2">
+
+      <!-- Frame 1: headache -->
+      <div class="data-frame">
+        <div class="data-frame-canvas">
+          <div class="data-frame-ui">
+            <div style="flex:1;position:relative;background:#04040c;overflow:hidden;">
+              <canvas id="df1-canvas" aria-hidden="true"></canvas>
+            </div>
+            <div class="data-frame-panel">
+              <span class="sb-lbl" style="margin-bottom:4px;font-size:.5rem;">LAYERS</span>
+              <div class="frame-layer"><div class="frame-layer-dot" style="background:#f3d627;box-shadow:0 0 5px #f3d627aa"></div><span class="frame-layer-name">heaviness</span></div>
+              <div class="frame-layer"><div class="frame-layer-dot" style="background:#f76b19;box-shadow:0 0 5px #f76b19aa"></div><span class="frame-layer-name">radiating</span></div>
+              <div class="frame-layer"><div class="frame-layer-dot" style="background:#a1dedf;box-shadow:0 0 5px #a1dedfaa"></div><span class="frame-layer-name">brain fog</span></div>
+              <div class="frame-layer"><div class="frame-layer-dot" style="background:#e7aa56;box-shadow:0 0 5px #e7aa56aa"></div><span class="frame-layer-name">face discomfort</span></div>
+              <div class="frame-layer"><div class="frame-layer-dot" style="background:#ed423e;box-shadow:0 0 5px #ed423eaa"></div><span class="frame-layer-name">sharpness behind eye</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="data-frame-meta">
+          <p class="data-frame-note">Headache started as soon as I woke up, more than an hour ago. Head feels super heavy.</p>
+        </div>
+      </div>
+
+      <!-- Frame 2: biking arm pain -->
+      <div class="data-frame">
+        <div class="data-frame-canvas">
+          <div class="data-frame-ui">
+            <div style="flex:1;position:relative;background:#04040c;overflow:hidden;">
+              <canvas id="df2-canvas" aria-hidden="true"></canvas>
+            </div>
+            <div class="data-frame-panel">
+              <span class="sb-lbl" style="margin-bottom:4px;font-size:.5rem;">LAYERS</span>
+              <div class="frame-layer"><div class="frame-layer-dot" style="background:#43ec45;box-shadow:0 0 5px #43ec45aa"></div><span class="frame-layer-name">electric jolt</span></div>
+              <div class="frame-layer"><div class="frame-layer-dot" style="background:#f22a53;box-shadow:0 0 5px #f22a53aa"></div><span class="frame-layer-name">pressure ache</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="data-frame-meta">
+          <p class="data-frame-note">Sudden jolts of pain whenever I put weight on the arm. Happened while I was biking. Pretty intense for a few minutes then went away.</p>
+        </div>
+      </div>
+
+      <!-- Frame 3: period cramps -->
+      <div class="data-frame">
+        <div class="data-frame-canvas">
+          <div class="data-frame-ui">
+            <div style="flex:1;position:relative;background:#04040c;overflow:hidden;">
+              <canvas id="df3-canvas" aria-hidden="true"></canvas>
+            </div>
+            <div class="data-frame-panel">
+              <span class="sb-lbl" style="margin-bottom:4px;font-size:.5rem;">LAYERS</span>
+              <div class="frame-layer"><div class="frame-layer-dot" style="background:#ed8c3f;box-shadow:0 0 5px #ed8c3faa"></div><span class="frame-layer-name">sharp twisting</span></div>
+              <div class="frame-layer"><div class="frame-layer-dot" style="background:#71e468;box-shadow:0 0 5px #71e468aa"></div><span class="frame-layer-name">jittery ache</span></div>
+              <div class="frame-layer"><div class="frame-layer-dot" style="background:#9b6dff;box-shadow:0 0 5px #9b6dffaa"></div><span class="frame-layer-name">tummy discomfort</span></div>
+              <div class="frame-layer"><div class="frame-layer-dot" style="background:#fb0f0c;box-shadow:0 0 5px #fb0f0caa"></div><span class="frame-layer-name">cramps</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="data-frame-meta">
+          <p class="data-frame-note">Day 2 of my period. Did not want to get out of bed and wanted to stay scrunched into a ball. Had to take an advil.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Quotes -->
+    <div class="quotes-grid reveal d1">
+      <div class="pquote">
+        <blockquote>"When I'm in pain, I have now a way to show to my doctors: this is what I felt on this day. I can draw it, and I can save it, and it's gonna be a good representation of what I felt on that day."</blockquote>
+        <cite>Patient — Suspected Endometriosis</cite>
+      </div>
+      <div class="pquote">
+        <blockquote>"Seeing my pain represented in that way really made me think of it differently. I realized it's a part of me and I should be taking care of it more."</blockquote>
+        <cite>Patient — Chronic IBS</cite>
+      </div>
+      <div class="pquote">
+        <blockquote>"I think that could be really interesting for trying to understand somebody's pain who has a lot of it, because that's a hard thing to do. Somebody comes to you with a lot of pain, they want to unpack it all and you don't always have all the time to do it. So optimizing the visual representation of pain could be very helpful for doctors."</blockquote>
+        <cite>Pain Specialist — Stanford Medicine</cite>
+      </div>
+      <div class="pquote">
+        <blockquote>"When you put it on the body, I'm keying in on that spot on his left scapula — that's where the rhomboids are. That's probably where he's got something going on right there. So that's much more specific than saying I have back pain, and much more helpful for me."</blockquote>
+        <cite>Pain Specialist — Stanford Medicine</cite>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<hr class="rule"/>
+
+<!-- ══ THE TOOL ══ -->
+<section id="illuminate" class="section-pad" style="padding-top:clamp(2rem,5vw,4rem);padding-bottom:var(--sp-lg);">
+
+  <!-- Visual tools label + tool description -->
+  <div class="wrap">
+    <h2 class="clinical-data-heading reveal">Visual tools act as grounding for language</h2>
+    <p class="label reveal d1" style="margin-top:var(--sp-sm);">Try it yourself</p>
+  </div>
+
+  <!-- ── SANDBOX ── -->
+  <div id="sandbox" aria-label="Illuminate drawing sandbox">
+    <div class="sb-inner">
+      <!-- Canvas -->
+      <div class="sb-canvas-wrap">
+        <canvas id="sb-canvas" tabindex="0" aria-label="Drawing canvas — draw to express your pain"></canvas>
+        <!-- Body outline image -->
+        <img src="bodywhite%20outline.png" class="sb-body-svg" alt="" aria-hidden="true"/>
+      </div>
+      <!-- Toolbar -->
+      <div class="sb-toolbar" id="sb-toolbar">
+        <button class="sb-tbtn active" id="sb-tool-pencil" onclick="sbSetTool('pencil')" aria-label="Pencil">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+          <span class="sb-ttooltip">Pencil</span>
+        </button>
+        <button class="sb-tbtn" id="sb-tool-eraser" onclick="sbSetTool('eraser')" aria-label="Eraser">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 20H7L3 16l11-11 6 6-1.5 1.5"/><path d="m6.5 17.5 5-5"/></svg>
+          <span class="sb-ttooltip">Eraser</span>
+        </button>
+        <div class="sb-tdiv"></div>
+        <button class="sb-tbtn" onclick="sbUndo()" aria-label="Undo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></svg>
+          <span class="sb-ttooltip">Undo</span>
+        </button>
+        <button class="sb-tbtn" onclick="sbClearAll()" aria-label="Clear layer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+          <span class="sb-ttooltip">Clear layer</span>
+        </button>
+        <div class="sb-tdiv"></div>
+        <button class="sb-tbtn" id="sb-help-btn" onclick="event.stopPropagation();sbToggleHelp()" aria-label="Help" style="font-family:var(--fb);font-size:13px;font-weight:500;letter-spacing:0;color:rgba(255,255,255,.4);">?
+          <span class="sb-ttooltip">Help</span>
+        </button>
+      </div>
+      <!-- Panel -->
+      <div class="sb-panel">
+        <div class="sb-scroll">
+          <div class="sb-s" id="sb-s-layers">
+            <span class="sb-lbl">Layers</span>
+            <div class="sb-ll" id="sb-ll"></div>
+            <button class="sb-alb" onclick="sbAddLayer()">+ Add layer</button>
+          </div>
+          <div class="sb-div"></div>
+          <div class="sb-s" id="sb-s-color">
+            <span class="sb-lbl">Color</span>
+            <div class="sb-ctrig" id="sb-ctrig" onclick="sbTogglePal()">
+              <div class="sb-cprev" id="sb-cprev"></div>
+              <span style="font-family:var(--fb);font-size:.65rem;color:var(--text-mid);letter-spacing:.04em;">Pick color</span>
+            </div>
+            <div class="sb-cpal" id="sb-cpal">
+              <canvas class="sb-cwheel" id="sb-cwheel" width="140" height="140"></canvas>
+            </div>
+          </div>
+          <div class="sb-div"></div>
+          <div class="sb-s" id="sb-s-thk">
+            <span class="sb-lbl">Thickness</span>
+            <div class="sb-sr">
+              <input type="range" id="sb-thk" min="1" max="40" value="5" oninput="sbUpdL('thickness',+this.value);document.getElementById('sb-thkv').textContent=this.value">
+              <span class="sb-sv" id="sb-thkv">5</span>
+            </div>
+          </div>
+          <div class="sb-div"></div>
+          <div class="sb-s" id="sb-s-inten">
+            <span class="sb-lbl">Intensity</span>
+            <div class="sb-sr">
+              <input type="range" id="sb-int" min="1" max="100" value="75" oninput="sbUpdL('intensity',+this.value);document.getElementById('sb-intv').textContent=this.value">
+              <span class="sb-sv" id="sb-intv">75</span>
+            </div>
+          </div>
+          <div class="sb-div"></div>
+          <div class="sb-s" id="sb-s-tmp">
+            <span class="sb-lbl">Glow Tempo</span>
+            <div class="sb-sr">
+              <input type="range" id="sb-tmp" min="1" max="50" value="5" oninput="sbUpdL('glowTempo',+this.value);document.getElementById('sb-tmpv').textContent=this.value">
+              <span class="sb-sv" id="sb-tmpv">5</span>
+            </div>
+          </div>
+          <div class="sb-div"></div>
+          <div class="sb-s">
+            <div class="sb-tr">
+              <span class="sb-tl" id="sb-s-mvt-lbl">Movement</span>
+              <label class="sb-tsw"><input type="checkbox" id="sb-mvt" onchange="sbTogMvt(this.checked)"><div class="sb-ttr"></div><div class="sb-tth"></div></label>
+            </div>
+            <div class="sb-mso" id="sb-mso">
+              <span class="sb-lbl" style="margin-bottom:3px">Speed</span>
+              <div class="sb-sr">
+                <input type="range" id="sb-mvts" min="1" max="20" value="8" oninput="sbUpdL('movementSpeed',+this.value)">
+              </div>
+            </div>
+          </div>
+          <div class="sb-div"></div>
+          <div class="sb-s">
+            <div class="sb-tr">
+              <span class="sb-tl" id="sb-s-dsp-lbl">Disappearance</span>
+              <label class="sb-tsw"><input type="checkbox" id="sb-dsp" onchange="sbTogDsp(this.checked)"><div class="sb-ttr"></div><div class="sb-tth"></div></label>
+            </div>
+          </div>
+        </div>
+        <p class="sb-hint">Draw on the canvas to map your sensations</p>
+        <p class="sb-hint">For the full experience, <a href="https://illuminatepaintings.vercel.app" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(155,109,255,.35);">launch the Illuminate tool ↗</a></p>
+      </div>
+    </div>
+    <!-- Help panel — inside #sandbox so right:210px anchors correctly -->
+    <div id="sb-help-panel">
+      <div id="sb-help-inner"><div id="sb-help-track">
+        <div class="sb-hb" id="sbhb-layers"></div>
+        <div class="sb-hb" id="sbhb-color"></div>
+        <div class="sb-hb" id="sbhb-thk"></div>
+        <div class="sb-hb" id="sbhb-inten"></div>
+        <div class="sb-hb" id="sbhb-tmp"></div>
+        <div class="sb-hb" id="sbhb-mvt"></div>
+        <div class="sb-hb" id="sbhb-dsp"></div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <p class="tool-desc reveal">On a dark canvas, users draw with glowing, animated strokes, each layer representing a different sensation. The result is a <em>pain'ting</em>: an expressive, embodied record of an experience words were never adequate to hold.</p>
+    <p class="longitudinal-text reveal d1">Over time, a new longitudinal dataset of the individual experience of pain is built; one that supports patient advocacy and access to understanding and care.</p>
+  </div>
+</section>
+
+<hr class="rule"/>
+
+<!-- ══ CLINICAL DATA ══ -->
+<section id="two-sides" class="section-pad" style="padding-bottom:var(--sp-lg);">
+  <div class="wrap">
+    <h2 class="clinical-data-heading reveal">A new kind of clinical data, and a new kind of care.</h2>
+    <div class="label reveal d1" style="margin-top:var(--sp-sm);">TWO SIDES OF THE SAME TOOL</div>
+
+    <div class="flip-card reveal" id="flip-card" onclick="this.classList.toggle('flipped')">
+      <div class="flip-card-inner">
+
+        <!-- Front: Individual -->
+        <div class="flip-card-face flip-card-front">
+          <h3>Built for the Individual</h3>
+          <ul class="two-sides-list">
+            <li>Enables expression that precisely embodies sensations and allows others to truly understand.</li>
+            <li>Longitudinally mapping how pain manifests from day to day builds strong data for a patient advocacy toolkit.</li>
+            <li>Shifting the fundamental ways we talk about pain recharacterizes negative associations to improve individual control over modulation and perception.</li>
+          </ul>
+        </div>
+
+        <!-- Back: Care Provider -->
+        <div class="flip-card-face flip-card-back">
+          <h3>Built for the Care Provider</h3>
+          <ul class="two-sides-list">
+            <li>A dataset that has never existed before and provides new insights: longitudinal, quantitative, qualitative.</li>
+            <li>Providers can quickly identify diagnostic clues that are missed during verbal triage.</li>
+            <li>Creating straightforward communication pathways to building understanding and empathy; building provider trust in patients.</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+    <p class="flip-hint"><span class="flip-hint-icon">↻</span> Click to flip</p>
+  </div>
+</section>
+
+<hr class="rule"/>
+
+<!-- ══ WHERE THIS COULD GO ══ -->
+<section id="future" class="section-pad" style="padding-top:var(--sp-lg);">
+  <div class="wrap">
+    <h2 class="clinical-data-heading reveal">There's so much to be done.</h2>
+
+    <div class="future-list reveal d1">
+      <div class="future-item"><strong>Pattern recognition &amp; diagnostics:</strong> A large dataset of pain drawings mapped to diagnoses and patient histories could surface patterns that verbal description alone never captures, informing new diagnostic models and deepening our understanding of how pain presents across conditions and over time.</div>
+      <div class="future-item"><strong>Bridging communication gaps in clinical care:</strong> A shared visual language for pain could lower barriers for patients who struggle to describe their symptoms due to language, literacy, or cultural differences, making clinical encounters more equitable and more precise.</div>
+      <div class="future-item"><strong>Medical education &amp; empathy training:</strong> Illuminate could be integrated into clinical training to help future providers develop richer mental models of what pain actually looks and feels like for patients, moving beyond textbook symptom lists toward more human expression &amp; connection.</div>
+    </div>
+
+    <div class="coming-soon reveal d2">
+      <span class="coming-soon-label">Coming Soon</span>
+      <p class="coming-soon-item">Pilot Clinical Study, Stanford Pain Management Center</p>
+      <p class="coming-soon-item">Pilot Clinical Study, Lucille Packard Children's Hospital</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <span class="footer-logo">Illuminate</span>
+      <p class="footer-by">Work by Rishika Gundi<br>MS Design, Stanford University</p>
+    </div>
+    <div class="footer-refs">
+      <span class="refs-label">References</span>
+      <p class="ref-item">[1] Kvaskoff, M. et al. (2025). Endometriosis diagnostic delay. <em>BJOG</em>. sciencedirect.com/science/article/pii/S1472648325006121</p>
+      <p class="ref-item">[2] World Health Organization. (2023). Endometriosis fact sheet. who.int</p>
+      <p class="ref-item">[3] Westergaard, M.L. et al. (2024). Sex-based disparities in pain management. <em>PNAS</em>. doi:10.1073/pnas.2401331121</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+'use strict';
+// ═══════════════════════════════════════════════
+// SHARED DRAWING ENGINE (from Illuminate)
+// ═══════════════════════════════════════════════
+function hslToRgb(h,s,l){h/=360;let r,g,b;if(s===0){r=g=b=l;}else{const q=l<0.5?l*(1+s):l+s-l*s,p=2*l-q;const hue2rgb=(p,q,t)=>{if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;};r=hue2rgb(p,q,h+1/3);g=hue2rgb(p,q,h);b=hue2rgb(p,q,h-1/3);}return[Math.round(r*255),Math.round(g*255),Math.round(b*255)];}
+function hexToHsl(hex){const r=parseInt(hex.slice(1,3),16)/255,g=parseInt(hex.slice(3,5),16)/255,b=parseInt(hex.slice(5,7),16)/255;const max=Math.max(r,g,b),min=Math.min(r,g,b);let h=0,s=0,l=(max+min)/2;if(max!==min){const d=max-min;s=l>0.5?d/(2-max-min):d/(max+min);switch(max){case r:h=((g-b)/d+(g<b?6:0))/6;break;case g:h=((b-r)/d+2)/6;break;default:h=((r-g)/d+4)/6;}}return[h*360,s,l];}
+function rgbToHex(r,g,b){return'#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');}
+const _h2c={};
+function h2rgb(h){return _h2c[h]||(_h2c[h]={r:parseInt(h.slice(1,3),16),g:parseInt(h.slice(3,5),16),b:parseInt(h.slice(5,7),16)});}
+
+function dpath(c,pts){
+  c.beginPath();c.moveTo(pts[0].x,pts[0].y);
+  for(let i=1;i<pts.length-1;i++){const mx=(pts[i].x+pts[i+1].x)/2,my=(pts[i].y+pts[i+1].y)/2;c.quadraticCurveTo(pts[i].x,pts[i].y,mx,my);}
+  if(pts.length>1)c.lineTo(pts[pts.length-1].x,pts[pts.length-1].y);
+}
+
+function drawGlow(c,pts,col,thick,alpha){
+  if(!pts||pts.length<2||alpha<0.005)return;
+  const rgb=h2rgb(col);const ss=`rgb(${rgb.r},${rgb.g},${rgb.b})`;
+  c.save();c.lineCap='round';c.lineJoin='round';c.strokeStyle=ss;c.shadowColor=col;
+  const glow=14;
+  const passes=[{w:glow*1.9,a:alpha*0.04,bl:glow*2.7},{w:glow*1.6,a:alpha*0.08,bl:glow*2.2},{w:glow*1.1,a:alpha*0.13,bl:0},{w:glow*0.7,a:alpha*0.18,bl:0},{w:thick*1.8,a:alpha*0.32,bl:0},{w:thick*0.9,a:alpha*0.65,bl:0},{w:Math.max(1,thick*0.4),a:alpha*0.95,bl:0}];
+  passes.forEach(({w,a,bl})=>{c.globalAlpha=a;c.lineWidth=w;c.shadowBlur=bl;dpath(c,pts);c.stroke();});
+  c.shadowBlur=0;c.restore();
+}
+
+function drawMvt(c,pts,col,thick,t,baseAlpha){
+  if(!pts||pts.length<2)return;
+  const n=pts.length,segLen=Math.max(2,Math.floor(n*0.32));
+  const s=Math.floor((t%1)*n),e=Math.min(s+segLen,n);
+  if(e-s<2)return;
+  drawGlow(c,pts.slice(s,e),col,thick*0.65,baseAlpha);
+}
+
+function disappAlpha(t){t=t%1;const fo=1/6,hoff=1/2,fi=2/3;if(t<fo)return 0.5+0.5*Math.cos(t/fo*Math.PI);if(t<hoff)return 0;if(t<fi)return 0.5-0.5*Math.cos((t-hoff)/(fi-hoff)*Math.PI);return 1;}
+
+// ═══════════════════════════════════════════════
+// hero canvas removed
+
+// ═══════════════════════════════════════════════
+// PIVOT CANVAS — recording playback
+// ═══════════════════════════════════════════════
+(function(){
+  const canvas=document.getElementById('pivot-canvas');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  let W,H,phase=0;
+  // Pre-scripted layers for period cramps
+  const scriptLayers=[
+    {col:'#e85b5b',thick:6,intensity:80,glowTempo:6,gen:(W,H)=>{const pts=[];for(let x=W*.28;x<=W*.72;x+=4)pts.push({x,y:H*.58+10*Math.sin(x/22)});return[pts];}},
+    {col:'#e8853a',thick:4,intensity:70,glowTempo:4,gen:(W,H)=>{const pts=[];for(let x=W*.32;x<=W*.68;x+=4)pts.push({x,y:H*.63+7*Math.sin(x/18+1)});return[pts];}},
+    {col:'#9b6dff',thick:3,intensity:65,glowTempo:8,gen:(W,H)=>{const cx=W*.5,cy=H*.6,pts=[];for(let a=0;a<=Math.PI*4;a+=.1){const r=a*7;pts.push({x:cx+r*Math.cos(a),y:cy+r*Math.sin(a)*.7});}return[pts];}},
+    {col:'#4a90e8',thick:3,intensity:55,glowTempo:5,gen:(W,H)=>{const pts1=[],pts2=[];for(let i=0;i<8;i++){pts1.push({x:W*(.38+Math.random()*.08),y:H*(.53+Math.random()*.06)});}for(let i=0;i<8;i++){pts2.push({x:W*(.54+Math.random()*.08),y:H*(.67+Math.random()*.06)});}return[pts1,pts2];}},
+  ];
+  // Replay state
+  let genLayers=[],drawIdx=0,ptIdx=0,pauseFrames=0,live=[];
+  function init(){
+    const rect=canvas.getBoundingClientRect();
+    W=canvas.width=rect.width||canvas.clientWidth||500;
+    H=canvas.height=rect.height||280;
+    genLayers=scriptLayers.map(sl=>({...sl,paths:sl.gen(W,H)}));
+    drawIdx=0;ptIdx=0;live=[];pauseFrames=0;
+  }
+  function tick(){
+    phase+=.009;
+    ctx.clearRect(0,0,W,H);
+    // Draw completed layers
+    live.forEach(l=>{
+      const ga=.72+.28*Math.sin(phase*(l.glowTempo/10)*Math.PI*2);
+      const alpha=(l.intensity/100)*ga;
+      l.paths.forEach(p=>drawGlow(ctx,p,l.col,l.thick,alpha));
+    });
+    // Draw current path being drawn
+    if(pauseFrames>0){pauseFrames--;requestAnimationFrame(tick);return;}
+    if(drawIdx>=genLayers.length){
+      // all done — hold then restart
+      pauseFrames=220;
+      setTimeout(()=>{init();},4000);
+      return;
+    }
+    const sl=genLayers[drawIdx];
+    const currentPath=sl.paths[0];
+    if(ptIdx<currentPath.length){
+      // add next few points
+      const step=Math.min(3,currentPath.length-ptIdx);
+      ptIdx+=step;
+      // Draw the partial stroke live
+      if(ptIdx>1)drawGlow(ctx,currentPath.slice(0,ptIdx),sl.col,sl.thick,(sl.intensity/100)*.88);
+    } else {
+      // Stroke done — commit to live layer and move to next path or layer
+      const existingLive=live.find(l=>l.col===sl.col);
+      if(existingLive){existingLive.paths.push(currentPath);}
+      else{live.push({col:sl.col,thick:sl.thick,intensity:sl.intensity,glowTempo:sl.glowTempo,paths:[currentPath]});}
+      // Next path in same layer or next layer
+      if(sl.paths.length>1){sl.paths.shift();ptIdx=0;pauseFrames=25;}
+      else{drawIdx++;ptIdx=0;pauseFrames=55;}
+    }
+    requestAnimationFrame(tick);
+  }
+  // Start when visible
+  const obs=new IntersectionObserver(entries=>{if(entries[0].isIntersecting){obs.disconnect();init();tick();}},{threshold:.2});
+  obs.observe(canvas);
+  window.addEventListener('resize',()=>{if(document.contains(canvas)){init();}});
+})();
+
+// ═══════════════════════════════════════════════
+// DATA FRAME CANVASES — real painting data renders
+// (handled below by DF.forEach loop)
+
+// ═══════════════════════════════════════════════
+// SANDBOX — embedded drawing tool
+// ═══════════════════════════════════════════════
+const sbCanvas=document.getElementById('sb-canvas');
+const sbCtx=sbCanvas.getContext('2d');
+let sbLayers=[],sbSelId=null,sbPhase=0,sbIsDrawing=false,sbCurPts=[],sbAfId=null,sbTool='pencil';
+const sbAnimSt={};
+let sbCwInited=false,sbCwCanvas,sbCwCtx,sbCwR,sbCwCx,sbCwCy,sbCwDrag=false;
+
+function sbGetLAnim(id){if(!sbAnimSt[id])sbAnimSt[id]={mt:0,dt:0};return sbAnimSt[id];}
+function sbMkLayer(col){return{id:'l'+Date.now()+Math.random().toString(36).slice(2),name:'',visible:true,color:col||'#9b6dff',thickness:5,intensity:75,glowTempo:5,movementFollow:false,movementSpeed:8,disappear:false,paths:[]};}
+function sbGetL(){return sbLayers.find(l=>l.id===sbSelId);}
+function sbUpdL(p,v){const l=sbGetL();if(l)l[p]=v;}
+function sbSetTool(t){sbTool=t;document.getElementById('sb-tool-pencil').classList.toggle('active',t==='pencil');document.getElementById('sb-tool-eraser').classList.toggle('active',t==='eraser');sbCanvas.style.cursor=t==='eraser'?'cell':'crosshair';}
+function sbUndo(){const l=sbGetL();if(l&&l.paths.length>0)l.paths.pop();}
+function sbClearAll(){const l=sbGetL();if(l)l.paths=[];}
+
+function sbAddLayer(col){
+  const l=sbMkLayer(col||pickNextColor());
+  sbLayers.push(l);sbSelId=l.id;
+  sbRenderLL();sbSyncPanel();return l;
+}
+const LAYER_COLORS=['#9b6dff','#e8853a','#e85b5b','#4a90e8','#50e87a','#c8e040','#e8607a','#c8a0ff'];
+function pickNextColor(){return LAYER_COLORS[sbLayers.length%LAYER_COLORS.length];}
+
+function sbSelLayer(id){sbSelId=id;sbRenderLL();sbSyncPanel();}
+function sbDelLayer(id){
+  if(sbLayers.length===1)return;
+  sbLayers=sbLayers.filter(l=>l.id!==id);
+  if(sbSelId===id)sbSelId=sbLayers[sbLayers.length-1].id;
+  sbRenderLL();sbSyncPanel();
+}
+
+function sbRenderLL(){
+  document.getElementById('sb-ll').innerHTML=sbLayers.map(l=>`
+    <div class="sb-lr${l.id===sbSelId?' sel':''}" onclick="sbSelLayer('${l.id}')">
+      <div class="sb-lsw" style="background:${l.color};box-shadow:0 0 4px ${l.color}88"></div>
+      <span class="sb-ln">${l.name||'<span style="opacity:.45;font-style:italic">sensation</span>'}</span>
+      <button class="sb-ldel" onclick="event.stopPropagation();sbDelLayer('${l.id}')" aria-label="Delete layer">&#10005;</button>
+    </div>`).join('');
+}
+
+function sbSyncPanel(){
+  const l=sbGetL();if(!l)return;
+  document.getElementById('sb-cprev').style.background=l.color;
+  document.getElementById('sb-cprev').style.boxShadow=`0 0 6px ${l.color}88`;
+  if(sbCwInited&&document.getElementById('sb-cpal').classList.contains('open'))sbDrawCursor(l.color);
+  document.getElementById('sb-thk').value=l.thickness;document.getElementById('sb-thkv').textContent=l.thickness;
+  document.getElementById('sb-int').value=l.intensity;document.getElementById('sb-intv').textContent=l.intensity;
+  document.getElementById('sb-tmp').value=l.glowTempo;document.getElementById('sb-tmpv').textContent=l.glowTempo;
+  document.getElementById('sb-mvt').checked=l.movementFollow;
+  document.getElementById('sb-mso').classList.toggle('open',l.movementFollow);
+  document.getElementById('sb-mvts').value=l.movementSpeed;
+  document.getElementById('sb-dsp').checked=l.disappear;
+}
+
+function sbTogMvt(on){sbUpdL('movementFollow',on);document.getElementById('sb-mso').classList.toggle('open',on);}
+function sbTogDsp(on){sbUpdL('disappear',on);if(on){const l=sbGetL();if(l)sbGetLAnim(l.id).dt=0;}}
+
+// Color wheel
+function sbTogglePal(){
+  const pal=document.getElementById('sb-cpal');
+  pal.classList.toggle('open');
+  if(pal.classList.contains('open')&&!sbCwInited){sbInitCw();sbCwInited=true;}
+  else if(sbCwInited){const l=sbGetL();if(l)sbDrawCursor(l.color);}
+}
+function sbInitCw(){
+  sbCwCanvas=document.getElementById('sb-cwheel');
+  const SZ=140;sbCwCanvas.width=SZ;sbCwCanvas.height=SZ;
+  sbCwCanvas.style.width=SZ+'px';sbCwCanvas.style.height=SZ+'px';
+  sbCwCx=SZ/2;sbCwCy=SZ/2;sbCwR=SZ/2-2;sbCwCtx=sbCwCanvas.getContext('2d');
+  const img=sbCwCtx.createImageData(SZ,SZ);const d=img.data;
+  for(let y=0;y<SZ;y++)for(let x=0;x<SZ;x++){const dx=x-sbCwCx,dy=y-sbCwCy,dist=Math.sqrt(dx*dx+dy*dy);if(dist<=sbCwR){const hue=((Math.atan2(dy,dx)*180/Math.PI)+360)%360,sat=dist/sbCwR,lig=.5+(1-sat)*.5;const[r,g,b]=hslToRgb(hue,sat,lig);const i=(y*SZ+x)*4;d[i]=r;d[i+1]=g;d[i+2]=b;d[i+3]=255;}}
+  sbCwCtx.putImageData(img,0,0);sbCwCanvas._img=sbCwCtx.getImageData(0,0,SZ,SZ);
+  sbCwCanvas.addEventListener('mousedown',e=>{sbCwDrag=true;sbCwPick(e);});
+  sbCwCanvas.addEventListener('mousemove',e=>{if(sbCwDrag)sbCwPick(e);});
+  window.addEventListener('mouseup',()=>sbCwDrag=false);
+  sbCwCanvas.addEventListener('touchstart',e=>{e.preventDefault();sbCwPickT(e);},{passive:false});
+  sbCwCanvas.addEventListener('touchmove',e=>{e.preventDefault();sbCwPickT(e);},{passive:false});
+  const l=sbGetL();if(l)sbDrawCursor(l.color);
+}
+function sbCwPickAt(x,y){const dx=x-sbCwCx,dy=y-sbCwCy,dist=Math.min(Math.sqrt(dx*dx+dy*dy),sbCwR);const hue=((Math.atan2(dy,dx)*180/Math.PI)+360)%360,sat=dist/sbCwR,lig=.5+(1-sat)*.5;const[r,g,b]=hslToRgb(hue,sat,lig);return rgbToHex(r,g,b);}
+function sbCwPick(e){const rect=sbCwCanvas.getBoundingClientRect();sbSetCwColor(sbCwPickAt(e.clientX-rect.left,e.clientY-rect.top));}
+function sbCwPickT(e){const rect=sbCwCanvas.getBoundingClientRect(),t=e.touches[0];sbSetCwColor(sbCwPickAt(t.clientX-rect.left,t.clientY-rect.top));}
+function sbSetCwColor(hex){const l=sbGetL();if(!l)return;l.color=hex;document.getElementById('sb-cprev').style.background=hex;document.getElementById('sb-cprev').style.boxShadow=`0 0 6px ${hex}88`;sbDrawCursor(hex);sbRenderLL();}
+function sbDrawCursor(hex){
+  if(!sbCwCtx||!sbCwCanvas||!sbCwCanvas._img)return;
+  sbCwCtx.putImageData(sbCwCanvas._img,0,0);
+  const[h,s]=hexToHsl(hex);const rad=h*Math.PI/180,dist=Math.min(s,1)*sbCwR;
+  const x=sbCwCx+dist*Math.cos(rad),y=sbCwCy+dist*Math.sin(rad);
+  sbCwCtx.save();
+  sbCwCtx.beginPath();sbCwCtx.arc(x,y,7,0,Math.PI*2);sbCwCtx.strokeStyle='white';sbCwCtx.lineWidth=2;sbCwCtx.stroke();
+  sbCwCtx.beginPath();sbCwCtx.arc(x,y,5,0,Math.PI*2);sbCwCtx.strokeStyle='rgba(0,0,0,.5)';sbCwCtx.lineWidth=1;sbCwCtx.stroke();
+  sbCwCtx.restore();
+}
+
+// Resize
+function sbResize(){
+  const wrap=document.querySelector('.sb-canvas-wrap');
+  if(!wrap)return;
+  const dpr=window.devicePixelRatio||1;
+  const W=wrap.clientWidth,H=wrap.clientHeight;
+  sbCanvas.width=W*dpr;sbCanvas.height=H*dpr;
+  sbCanvas.style.width=W+'px';sbCanvas.style.height=H+'px';
+  sbCtx.scale(dpr,dpr);
+}
+
+// Drawing
+function sbGetPos(e){const r=sbCanvas.getBoundingClientRect();if(e.touches)return{x:e.touches[0].clientX-r.left,y:e.touches[0].clientY-r.top};return{x:e.clientX-r.left,y:e.clientY-r.top};}
+sbCanvas.addEventListener('mousedown',e=>{const l=sbGetL();if(!l)return;sbIsDrawing=true;const p=sbGetPos(e);sbCurPts=[{x:p.x,y:p.y}];});
+sbCanvas.addEventListener('mousemove',e=>{if(!sbIsDrawing)return;const p=sbGetPos(e);sbCurPts.push({x:p.x,y:p.y});});
+sbCanvas.addEventListener('mouseup',sbFinStroke);sbCanvas.addEventListener('mouseleave',sbFinStroke);
+sbCanvas.addEventListener('touchstart',e=>{e.preventDefault();const l=sbGetL();if(!l)return;sbIsDrawing=true;const p=sbGetPos(e);sbCurPts=[{x:p.x,y:p.y}];},{passive:false});
+sbCanvas.addEventListener('touchmove',e=>{e.preventDefault();if(!sbIsDrawing)return;const p=sbGetPos(e);sbCurPts.push({x:p.x,y:p.y});},{passive:false});
+sbCanvas.addEventListener('touchend',sbFinStroke);
+function sbFinStroke(){if(!sbIsDrawing)return;sbIsDrawing=false;if(sbCurPts.length<2){sbCurPts=[];return;}const l=sbGetL();if(!l){sbCurPts=[];return;}
+if(sbTool==='eraser'){const R=20;l.paths=l.paths.filter(path=>!path.points.some(pt=>sbCurPts.some(ep=>Math.hypot(pt.x-ep.x,pt.y-ep.y)<R)));}
+else{l.paths.push({points:[...sbCurPts]});}
+sbCurPts=[];}
+
+// Render loop
+function sbRenderLoop(){
+  const dpr=window.devicePixelRatio||1;
+  const W=sbCanvas.width/dpr,H=sbCanvas.height/dpr;
+  sbCtx.clearRect(0,0,W,H);
+  sbPhase+=.011;
+  sbLayers.forEach(l=>{
+    if(!l.visible)return;
+    const a=sbGetLAnim(l.id);
+    const ga=.72+.28*Math.sin(sbPhase*(l.glowTempo/10)*Math.PI*2);
+    let da=1;if(l.disappear){da=disappAlpha(a.dt);a.dt+=1/540;}
+    const baseAlpha=(l.intensity/100)*ga*da;
+    l.paths.forEach(path=>{
+      const bgAlpha=l.movementFollow?baseAlpha*.35:baseAlpha;
+      drawGlow(sbCtx,path.points,l.color,l.thickness,bgAlpha);
+      if(l.movementFollow){a.mt+=.004*(l.movementSpeed/10);drawMvt(sbCtx,path.points,l.color,l.thickness,a.mt,baseAlpha);}
+    });
+  });
+  if(sbIsDrawing&&sbCurPts.length>1&&sbTool==='pencil'){const l=sbGetL();if(l)drawGlow(sbCtx,sbCurPts,l.color,l.thickness,(l.intensity/100)*.88);}
+  sbAfId=requestAnimationFrame(sbRenderLoop);
+}
+
+// ═══════════════════════════════════════════════
+// HELP PANEL
+// ═══════════════════════════════════════════════
+const SB_HELP_BUBBLES=[
+  {id:'sbhb-layers', anchor:'sb-s-layers',  text:'There is nuance to what you feel. Add new layers to depict all the different types of sensations.'},
+  {id:'sbhb-color',  anchor:'sb-s-color',   text:'What color is most representative of the feeling? Give the sensation a name (e.g. Nausea, Electric, Cold).'},
+  {id:'sbhb-thk',    anchor:'sb-s-thk',     text:'How is the sensation spatialized? Sharp and localized? More spread out? Edit the line thickness to match.'},
+  {id:'sbhb-inten',  anchor:'sb-s-inten',   text:'How intensely do you feel this particular sensation?'},
+  {id:'sbhb-tmp',    anchor:'sb-s-tmp',     text:'Is the sensation throbbing? Rapidly or slowly? Adjust the tempo till it feels right to you.'},
+  {id:'sbhb-mvt',    anchor:'sb-s-mvt-lbl', text:'Does the sensation travel across the body? Toggle this on for the glow to follow the movement of your pen.'},
+  {id:'sbhb-dsp',    anchor:'sb-s-dsp-lbl', text:'Is the feeling intermittent? Toggle this on to represent how it sometimes appears and disappears.'},
+];
+SB_HELP_BUBBLES.forEach(b=>{const el=document.getElementById(b.id);if(el)el.textContent=b.text;});
+
+function sbPositionHelpBubbles(){
+  const inner=document.getElementById('sb-help-inner');if(!inner)return;
+  const pr=inner.getBoundingClientRect();
+  const GAP=5;
+  const items=[];
+  SB_HELP_BUBBLES.forEach(b=>{
+    const el=document.getElementById(b.id);if(!el)return;
+    const anchor=document.getElementById(b.anchor);if(!anchor)return;
+    const ar=anchor.getBoundingClientRect();
+    const ideal=ar.top+ar.height/2-pr.top;
+    items.push({el,ideal,h:el.offsetHeight,top:ideal-el.offsetHeight/2});
+  });
+  if(!items.length)return;
+  items.sort((a,b)=>a.ideal-b.ideal);
+  for(let pass=0;pass<20;pass++){
+    let moved=false;
+    for(let i=0;i<items.length-1;i++){
+      const a=items[i],b=items[i+1];
+      const overlap=a.top+a.h+GAP-b.top;
+      if(overlap>0.5){a.top-=overlap/2;b.top+=overlap/2;moved=true;}
+    }
+    items.forEach(it=>{const ideal=it.ideal-it.h/2;it.top+=(ideal-it.top)*0.3;});
+    if(!moved)break;
+  }
+  for(let i=1;i<items.length;i++){
+    const prev=items[i-1],curr=items[i];
+    if(curr.top<prev.top+prev.h+GAP)curr.top=prev.top+prev.h+GAP;
+  }
+  items.forEach(it=>{it.el.style.top=Math.max(4,Math.round(it.top))+'px';});
+}
+
+function sbOpenHelp(){
+  const panel=document.getElementById('sb-help-panel');if(!panel)return;
+  // Position fixed panel flush against the left edge of the control panel
+  const ctrl=document.querySelector('.sb-panel');
+  const tb=document.getElementById('sb-toolbar');
+  if(ctrl){
+    const cr=ctrl.getBoundingClientRect();
+    panel.style.top=cr.top+'px';
+    panel.style.left=(cr.left-240)+'px';
+    panel.style.height=cr.height+'px';
+  }
+  panel.classList.add('open');
+  if(tb)tb.classList.add('help-open');
+  document.getElementById('sb-help-btn').classList.add('help-active');
+  setTimeout(sbPositionHelpBubbles,80);
+  const scroll=document.querySelector('.sb-scroll');
+  if(scroll){scroll._helpScroll=sbPositionHelpBubbles;scroll.addEventListener('scroll',scroll._helpScroll);}
+  // Click on canvas closes help
+  const cw=document.querySelector('.sb-canvas-wrap');
+  if(cw){const close=()=>{sbCloseHelp();cw.removeEventListener('click',close);};cw.addEventListener('click',close);}
+}
+function sbCloseHelp(){
+  const panel=document.getElementById('sb-help-panel');if(!panel)return;
+  panel.classList.remove('open');
+  const tb=document.getElementById('sb-toolbar');
+  if(tb)tb.classList.remove('help-open');
+  document.getElementById('sb-help-btn').classList.remove('help-active');
+  const scroll=document.querySelector('.sb-scroll');
+  if(scroll&&scroll._helpScroll){scroll.removeEventListener('scroll',scroll._helpScroll);scroll._helpScroll=null;}
+}
+function sbToggleHelp(){
+  const panel=document.getElementById('sb-help-panel');if(!panel)return;
+  panel.classList.contains('open')?sbCloseHelp():sbOpenHelp();
+}
+
+// ═══════════════════════════════════════════════
+// DATA FRAME CANVASES
+// ═══════════════════════════════════════════════
+(function(){
+// Researcher-exact drawing engine (thickness-relative glow passes)
+function dfDrawGlow(c,pts,col,thick,alpha){
+  if(!pts||pts.length<2)return;
+  const rgb=h2rgb(col);
+  c.save();c.lineCap='round';c.lineJoin='round';
+  const passes=[
+    {w:thick*7,a:alpha*0.04},{w:thick*5,a:alpha*0.08},
+    {w:thick*3.5,a:alpha*0.13},{w:thick*2.2,a:alpha*0.20},
+    {w:thick*1.4,a:alpha*0.35},{w:thick*0.7,a:alpha*0.68},
+    {w:Math.max(1,thick*0.3),a:alpha*0.95},
+  ];
+  passes.forEach(({w,a})=>{
+    c.globalAlpha=a;c.strokeStyle=`rgb(${rgb.r},${rgb.g},${rgb.b})`;
+    c.lineWidth=w;c.shadowColor=col;c.shadowBlur=w*1.4;
+    dpath(c,pts);c.stroke();
+  });
+  c.shadowBlur=0;c.restore();
+}
+function dfDrawMvt(c,pts,col,thick,t,masterAlpha){
+  if(!pts||pts.length<2)return;
+  const n=pts.length,segLen=Math.max(2,Math.floor(n*0.32));
+  const s=Math.floor((t%1)*n),e=Math.min(s+segLen,n);
+  if(e-s<2)return;
+  dfDrawGlow(c,pts.slice(s,e),col,thick*0.65,0.85*masterAlpha);
+}
+function dfDrawBodyOutline(c,img,origW,origH){
+  const iw=img.naturalWidth||img.width||1,ih=img.naturalHeight||img.height||1;
+  const dh=origH*0.9,dw=iw*(dh/ih),dx=(origW-dw)/2,dy=(origH-dh)/2;
+  c.save();c.globalAlpha=0.22;c.drawImage(img,dx,dy,dw,dh);c.restore();
+}
+// Preload body outline
+const bocImg=new Image();bocImg.src='bodywhite%20outline.png';
+
+const DF=[{"notes":"Headache started as soon as I woke up, more than an hour ago. Head feels super heavy.","bg":"black","cw":1016,"ch":831,"layers":[{"name":"heaviness","color":"#f3d627","thickness":35,"intensity":27,"glowTempo":5,"movementFollow":false,"paths":[[{"x":332,"y":262},{"x":333,"y":261},{"x":339,"y":255},{"x":345,"y":250},{"x":348,"y":247},{"x":351,"y":245},{"x":353,"y":243},{"x":354,"y":243},{"x":355,"y":242},{"x":356,"y":242},{"x":357,"y":242},{"x":357,"y":243},{"x":357,"y":244},{"x":356,"y":247},{"x":353,"y":251},{"x":350,"y":255},{"x":348,"y":258},{"x":346,"y":260},{"x":345,"y":263},{"x":345,"y":265},{"x":346,"y":267},{"x":349,"y":269},{"x":353,"y":269},{"x":356,"y":269},{"x":359,"y":268},{"x":362,"y":264},{"x":365,"y":260},{"x":367,"y":256},{"x":369,"y":253},{"x":371,"y":251},{"x":373,"y":248},{"x":376,"y":246},{"x":378,"y":245},{"x":380,"y":244},{"x":382,"y":244},{"x":383,"y":244},{"x":385,"y":244},{"x":387,"y":245},{"x":388,"y":250},{"x":384,"y":258},{"x":378,"y":266},{"x":375,"y":271},{"x":374,"y":273},{"x":374,"y":276},{"x":374,"y":278},{"x":375,"y":279},{"x":377,"y":280},{"x":381,"y":279},{"x":389,"y":272},{"x":396,"y":263},{"x":400,"y":257},{"x":405,"y":250},{"x":410,"y":245},{"x":414,"y":241},{"x":416,"y":240},{"x":419,"y":239},{"x":421,"y":239},{"x":423,"y":241},{"x":423,"y":247},{"x":422,"y":253},{"x":419,"y":261},{"x":416,"y":266},{"x":415,"y":269},{"x":415,"y":271},{"x":414,"y":272},{"x":414,"y":273},{"x":414,"y":274},{"x":415,"y":274},{"x":417,"y":274},{"x":420,"y":271},{"x":424,"y":266},{"x":429,"y":260},{"x":433,"y":256},{"x":437,"y":252},{"x":440,"y":250},{"x":442,"y":248},{"x":444,"y":248},{"x":447,"y":247},{"x":448,"y":247},{"x":450,"y":248},{"x":451,"y":251},{"x":451,"y":255},{"x":450,"y":261},{"x":449,"y":265},{"x":448,"y":270},{"x":448,"y":273},{"x":448,"y":274},{"x":448,"y":275},{"x":449,"y":275},{"x":452,"y":275},{"x":458,"y":270},{"x":464,"y":262},{"x":469,"y":256},{"x":475,"y":250},{"x":481,"y":246},{"x":484,"y":244},{"x":485,"y":244},{"x":487,"y":244},{"x":488,"y":245},{"x":488,"y":252},{"x":484,"y":261},{"x":480,"y":271},{"x":478,"y":278},{"x":477,"y":283},{"x":477,"y":285},{"x":477,"y":286},{"x":481,"y":285},{"x":488,"y":277},{"x":494,"y":270},{"x":500,"y":262},{"x":505,"y":258},{"x":510,"y":253},{"x":514,"y":249},{"x":518,"y":247},{"x":521,"y":246},{"x":522,"y":246},{"x":522,"y":246},{"x":523,"y":249},{"x":523,"y":254},{"x":521,"y":264},{"x":518,"y":271},{"x":517,"y":278},{"x":516,"y":281},{"x":516,"y":281},{"x":521,"y":279},{"x":527,"y":271},{"x":534,"y":261},{"x":541,"y":252},{"x":547,"y":245},{"x":550,"y":241},{"x":554,"y":239},{"x":556,"y":238},{"x":557,"y":238},{"x":558,"y":238},{"x":558,"y":243},{"x":557,"y":253},{"x":555,"y":262},{"x":553,"y":271},{"x":552,"y":275},{"x":552,"y":277},{"x":553,"y":277},{"x":559,"y":274},{"x":565,"y":268},{"x":571,"y":260},{"x":576,"y":254},{"x":582,"y":248},{"x":585,"y":245},{"x":587,"y":245},{"x":588,"y":245},{"x":588,"y":247},{"x":588,"y":252},{"x":588,"y":260},{"x":586,"y":266},{"x":585,"y":270},{"x":585,"y":272},{"x":585,"y":273},{"x":585,"y":273},{"x":587,"y":270},{"x":592,"y":264},{"x":597,"y":256},{"x":603,"y":250},{"x":607,"y":247},{"x":610,"y":245},{"x":611,"y":245},{"x":612,"y":245},{"x":612,"y":245},{"x":613,"y":248},{"x":613,"y":252},{"x":613,"y":258},{"x":613,"y":264},{"x":613,"y":268},{"x":613,"y":270},{"x":613,"y":271},{"x":615,"y":271},{"x":621,"y":263},{"x":628,"y":254},{"x":633,"y":248},{"x":635,"y":244},{"x":637,"y":242},{"x":638,"y":242},{"x":640,"y":242},{"x":641,"y":242},{"x":642,"y":242},{"x":643,"y":244},{"x":644,"y":247},{"x":644,"y":249},{"x":644,"y":253},{"x":645,"y":256},{"x":645,"y":259},{"x":645,"y":260},{"x":646,"y":260},{"x":647,"y":260},{"x":650,"y":260},{"x":652,"y":257},{"x":657,"y":252},{"x":660,"y":249},{"x":662,"y":246},{"x":663,"y":246},{"x":665,"y":245},{"x":666,"y":245},{"x":667,"y":245},{"x":667,"y":245},{"x":669,"y":246},{"x":669,"y":247},{"x":670,"y":248},{"x":671,"y":251},{"x":671,"y":253},{"x":672,"y":256},{"x":672,"y":259},{"x":672,"y":261},{"x":672,"y":263},{"x":673,"y":264},{"x":673,"y":265},{"x":674,"y":266},{"x":674,"y":266},{"x":675,"y":266}]]},{"name":"radiating","color":"#f76b19","thickness":5,"intensity":85,"glowTempo":5,"movementFollow":true,"paths":[[{"x":669,"y":237},{"x":672,"y":237},{"x":677,"y":234},{"x":684,"y":230},{"x":690,"y":226},{"x":698,"y":221},{"x":702,"y":218},{"x":707,"y":214},{"x":713,"y":210},{"x":718,"y":208},{"x":722,"y":205},{"x":726,"y":203},{"x":729,"y":201},{"x":732,"y":199},{"x":735,"y":198},{"x":736,"y":198}],[{"x":674,"y":249},{"x":674,"y":249},{"x":675,"y":249},{"x":678,"y":249},{"x":685,"y":249},{"x":693,"y":249},{"x":701,"y":249},{"x":712,"y":249},{"x":722,"y":249},{"x":735,"y":247},{"x":747,"y":245},{"x":755,"y":244},{"x":763,"y":243},{"x":769,"y":243},{"x":773,"y":243},{"x":776,"y":243},{"x":777,"y":243},{"x":779,"y":243},{"x":779,"y":243}],[{"x":677,"y":264},{"x":677,"y":264},{"x":680,"y":264},{"x":689,"y":264},{"x":696,"y":264},{"x":705,"y":264},{"x":712,"y":264},{"x":721,"y":266},{"x":729,"y":268},{"x":736,"y":269},{"x":740,"y":269},{"x":747,"y":270},{"x":753,"y":271},{"x":761,"y":272},{"x":768,"y":272},{"x":773,"y":273},{"x":775,"y":273},{"x":777,"y":273},{"x":777,"y":273},{"x":777,"y":273}],[{"x":678,"y":272},{"x":681,"y":272},{"x":685,"y":272},{"x":689,"y":272},{"x":695,"y":273},{"x":703,"y":276},{"x":710,"y":279},{"x":716,"y":281},{"x":724,"y":284},{"x":729,"y":286},{"x":735,"y":289},{"x":740,"y":291},{"x":744,"y":293},{"x":747,"y":295},{"x":750,"y":296},{"x":753,"y":297},{"x":758,"y":298},{"x":763,"y":300},{"x":764,"y":301},{"x":764,"y":301},{"x":764,"y":301},{"x":764,"y":301},{"x":764,"y":302},{"x":764,"y":302}],[{"x":344,"y":244},{"x":341,"y":244},{"x":329,"y":244},{"x":314,"y":242},{"x":298,"y":237},{"x":287,"y":233},{"x":276,"y":229},{"x":267,"y":225},{"x":263,"y":223},{"x":263,"y":222}],[{"x":345,"y":256},{"x":339,"y":256},{"x":319,"y":256},{"x":301,"y":256},{"x":286,"y":256},{"x":271,"y":256},{"x":262,"y":254},{"x":259,"y":254},{"x":259,"y":254}],[{"x":330,"y":269},{"x":325,"y":269},{"x":315,"y":269},{"x":303,"y":269},{"x":289,"y":269},{"x":279,"y":269},{"x":267,"y":272},{"x":259,"y":273},{"x":255,"y":274},{"x":254,"y":274},{"x":254,"y":274}],[{"x":346,"y":276},{"x":346,"y":276},{"x":345,"y":276},{"x":339,"y":276},{"x":327,"y":276},{"x":316,"y":279},{"x":302,"y":286},{"x":289,"y":292},{"x":279,"y":298},{"x":272,"y":303},{"x":267,"y":306},{"x":263,"y":309},{"x":259,"y":311},{"x":258,"y":311},{"x":258,"y":311},{"x":257,"y":311},{"x":254,"y":313},{"x":251,"y":314},{"x":249,"y":315},{"x":246,"y":316},{"x":244,"y":318},{"x":244,"y":318},{"x":244,"y":318}]]},{"name":"brain fog","color":"#a1dedf","thickness":40,"intensity":10,"glowTempo":8,"movementFollow":false,"paths":[[{"x":324,"y":203},{"x":324,"y":199},{"x":328,"y":186},{"x":339,"y":177},{"x":355,"y":171},{"x":370,"y":168},{"x":381,"y":169},{"x":390,"y":174},{"x":399,"y":178},{"x":407,"y":182},{"x":414,"y":182},{"x":419,"y":182},{"x":424,"y":179},{"x":429,"y":173},{"x":434,"y":164},{"x":439,"y":152},{"x":444,"y":137},{"x":448,"y":125},{"x":455,"y":114},{"x":463,"y":105},{"x":473,"y":99},{"x":487,"y":95},{"x":499,"y":95},{"x":509,"y":96},{"x":516,"y":102},{"x":522,"y":115},{"x":525,"y":133},{"x":528,"y":147},{"x":533,"y":156},{"x":539,"y":164},{"x":545,"y":169},{"x":550,"y":171},{"x":558,"y":171},{"x":567,"y":169},{"x":577,"y":164},{"x":589,"y":158},{"x":600,"y":151},{"x":612,"y":145},{"x":619,"y":142},{"x":627,"y":141},{"x":634,"y":143},{"x":639,"y":149},{"x":645,"y":159},{"x":650,"y":167},{"x":654,"y":173},{"x":657,"y":177},{"x":660,"y":179},{"x":665,"y":180},{"x":669,"y":180},{"x":673,"y":180},{"x":675,"y":180},{"x":676,"y":180},{"x":676,"y":181},{"x":678,"y":184},{"x":679,"y":186},{"x":679,"y":186},{"x":680,"y":187}]]},{"name":"behind face discomfort","color":"#e7aa56","thickness":40,"intensity":46,"glowTempo":5,"movementFollow":false,"paths":[[{"x":462,"y":305},{"x":483,"y":305},{"x":522,"y":305},{"x":564,"y":305},{"x":587,"y":306},{"x":598,"y":309},{"x":600,"y":310},{"x":600,"y":311},{"x":560,"y":312},{"x":493,"y":314},{"x":447,"y":315},{"x":419,"y":318},{"x":404,"y":324},{"x":401,"y":327},{"x":414,"y":332},{"x":474,"y":336},{"x":535,"y":331},{"x":571,"y":325},{"x":589,"y":323},{"x":593,"y":323},{"x":583,"y":323},{"x":526,"y":323},{"x":482,"y":332},{"x":465,"y":343},{"x":462,"y":352},{"x":494,"y":362},{"x":542,"y":365},{"x":559,"y":362},{"x":562,"y":352},{"x":549,"y":339},{"x":515,"y":337},{"x":487,"y":354},{"x":478,"y":370},{"x":483,"y":384},{"x":519,"y":388},{"x":544,"y":380},{"x":547,"y":371},{"x":507,"y":352},{"x":456,"y":354},{"x":444,"y":372},{"x":458,"y":384},{"x":498,"y":377},{"x":504,"y":374},{"x":502,"y":382},{"x":493,"y":409},{"x":497,"y":424},{"x":513,"y":424},{"x":517,"y":424},{"x":513,"y":442},{"x":506,"y":466},{"x":507,"y":470},{"x":512,"y":474},{"x":512,"y":492},{"x":512,"y":507},{"x":514,"y":517},{"x":517,"y":526},{"x":519,"y":541},{"x":521,"y":548},{"x":524,"y":549},{"x":524,"y":549}]]},{"name":"sharpness behind eye","color":"#ed423e","thickness":5,"intensity":94,"glowTempo":12,"movementFollow":false,"paths":[[{"x":576,"y":271},{"x":572,"y":272},{"x":565,"y":277},{"x":557,"y":284},{"x":552,"y":290},{"x":552,"y":291},{"x":551,"y":292},{"x":551,"y":293},{"x":549,"y":297},{"x":549,"y":298},{"x":549,"y":298},{"x":554,"y":301},{"x":561,"y":305},{"x":572,"y":311},{"x":582,"y":317},{"x":590,"y":322},{"x":599,"y":326},{"x":606,"y":329},{"x":611,"y":332},{"x":615,"y":334},{"x":616,"y":334},{"x":615,"y":334},{"x":614,"y":334}],[{"x":557,"y":294},{"x":557,"y":294},{"x":557,"y":294},{"x":566,"y":293},{"x":576,"y":290},{"x":585,"y":287},{"x":587,"y":286},{"x":591,"y":284},{"x":594,"y":283},{"x":595,"y":283}],[{"x":556,"y":296},{"x":563,"y":296},{"x":571,"y":296},{"x":582,"y":296},{"x":591,"y":298},{"x":596,"y":300},{"x":598,"y":302},{"x":599,"y":303},{"x":599,"y":303},{"x":600,"y":305},{"x":600,"y":305}]]}]},{"notes":"Sudden jolts of pain whenever I put weight on the arm. Happened while I was biking. Pretty intense for a few minutes then went away.","bg":"image","bgSrc":"arm_bg.jpg","cw":1016,"ch":831,"layers":[{"name":"electric jolt","color":"#43ec45","thickness":5,"intensity":85,"glowTempo":5,"movementFollow":true,"paths":[[{"x":733,"y":524},{"x":730,"y":522},{"x":727,"y":520},{"x":722,"y":516},{"x":721,"y":514},{"x":720,"y":514}],[{"x":733,"y":533},{"x":730,"y":533},{"x":726,"y":533},{"x":720,"y":534},{"x":717,"y":536},{"x":716,"y":536}],[{"x":736,"y":542},{"x":735,"y":545},{"x":732,"y":548},{"x":728,"y":551},{"x":726,"y":552}],[{"x":435,"y":259},{"x":435,"y":252},{"x":434,"y":248},{"x":433,"y":246}],[{"x":424,"y":262},{"x":419,"y":260},{"x":414,"y":258},{"x":410,"y":257},{"x":409,"y":256}],[{"x":424,"y":268},{"x":419,"y":268},{"x":418,"y":268},{"x":414,"y":269},{"x":413,"y":270}]]},{"name":"pressure ache","color":"#f22a53","thickness":29,"intensity":30,"glowTempo":5,"movementFollow":true,"paths":[[{"x":703,"y":495},{"x":699,"y":492},{"x":693,"y":489},{"x":687,"y":484},{"x":682,"y":479},{"x":675,"y":472},{"x":668,"y":465},{"x":659,"y":456},{"x":652,"y":449},{"x":643,"y":441},{"x":634,"y":433},{"x":622,"y":423},{"x":612,"y":413},{"x":600,"y":403},{"x":587,"y":394},{"x":574,"y":386},{"x":560,"y":374},{"x":546,"y":361},{"x":535,"y":351},{"x":523,"y":338},{"x":516,"y":331},{"x":507,"y":323},{"x":498,"y":314},{"x":490,"y":308},{"x":481,"y":301},{"x":470,"y":294},{"x":460,"y":286},{"x":453,"y":282}]]}]},{"notes":"Day 2 of my period. Did not want to get out of bed and wanted to stay scrunched into a ball. Had to take an advil.","bg":"body","cw":1016,"ch":831,"layers":[{"name":"sharp twisting","color":"#ed8c3f","thickness":2,"intensity":77,"glowTempo":3,"movementFollow":false,"paths":[[{"x":456,"y":378},{"x":457,"y":378},{"x":457,"y":377},{"x":458,"y":377},{"x":459,"y":376},{"x":460,"y":375},{"x":461,"y":375},{"x":461,"y":375},{"x":462,"y":375},{"x":462,"y":375},{"x":463,"y":374},{"x":464,"y":374},{"x":465,"y":374},{"x":465,"y":374},{"x":466,"y":373},{"x":466,"y":373},{"x":466,"y":373},{"x":466,"y":374},{"x":466,"y":375},{"x":466,"y":376},{"x":466,"y":378},{"x":466,"y":379},{"x":466,"y":380},{"x":466,"y":381},{"x":466,"y":381},{"x":466,"y":382},{"x":466,"y":383},{"x":466,"y":383},{"x":466,"y":384},{"x":466,"y":384},{"x":466,"y":385},{"x":466,"y":385},{"x":465,"y":384},{"x":463,"y":384},{"x":462,"y":383},{"x":461,"y":383},{"x":460,"y":383},{"x":459,"y":382},{"x":459,"y":382},{"x":458,"y":381},{"x":457,"y":381},{"x":457,"y":381},{"x":456,"y":381},{"x":455,"y":380},{"x":455,"y":380},{"x":455,"y":380},{"x":454,"y":380}],[{"x":482,"y":384},{"x":483,"y":384},{"x":485,"y":384},{"x":487,"y":383},{"x":488,"y":382},{"x":490,"y":382},{"x":491,"y":381},{"x":492,"y":381},{"x":492,"y":381},{"x":492,"y":382},{"x":492,"y":383},{"x":492,"y":384},{"x":492,"y":385},{"x":492,"y":387},{"x":492,"y":388},{"x":492,"y":390},{"x":492,"y":391},{"x":491,"y":392},{"x":491,"y":393},{"x":491,"y":394},{"x":490,"y":395},{"x":490,"y":396},{"x":490,"y":396},{"x":490,"y":396},{"x":489,"y":396},{"x":489,"y":396},{"x":488,"y":396},{"x":488,"y":396},{"x":487,"y":395},{"x":486,"y":395},{"x":485,"y":394},{"x":484,"y":393},{"x":484,"y":393},{"x":483,"y":392},{"x":483,"y":392},{"x":483,"y":391},{"x":482,"y":391},{"x":482,"y":390},{"x":480,"y":389},{"x":480,"y":388},{"x":480,"y":388},{"x":480,"y":387},{"x":480,"y":387}],[{"x":468,"y":414},{"x":468,"y":414},{"x":468,"y":412},{"x":467,"y":411},{"x":467,"y":410},{"x":466,"y":409},{"x":466,"y":407},{"x":465,"y":406},{"x":464,"y":405},{"x":464,"y":404},{"x":463,"y":403},{"x":463,"y":403},{"x":462,"y":402},{"x":462,"y":402},{"x":462,"y":401},{"x":462,"y":401},{"x":463,"y":401},{"x":464,"y":401},{"x":465,"y":401},{"x":466,"y":401},{"x":466,"y":401},{"x":467,"y":401},{"x":467,"y":401},{"x":467,"y":401},{"x":467,"y":401},{"x":467,"y":401},{"x":468,"y":401},{"x":468,"y":400},{"x":468,"y":400},{"x":468,"y":400},{"x":469,"y":400},{"x":469,"y":400},{"x":469,"y":400},{"x":469,"y":400},{"x":470,"y":400},{"x":470,"y":400},{"x":470,"y":400},{"x":471,"y":400},{"x":471,"y":400},{"x":471,"y":400},{"x":471,"y":401},{"x":471,"y":402},{"x":471,"y":403},{"x":471,"y":404},{"x":471,"y":404},{"x":471,"y":405},{"x":471,"y":405},{"x":471,"y":406},{"x":471,"y":407},{"x":471,"y":407},{"x":471,"y":408},{"x":471,"y":409},{"x":471,"y":409},{"x":471,"y":410},{"x":471,"y":410},{"x":471,"y":411},{"x":471,"y":412},{"x":471,"y":412},{"x":471,"y":413},{"x":471,"y":413},{"x":471,"y":414},{"x":471,"y":415}],[{"x":539,"y":372},{"x":539,"y":372},{"x":539,"y":373},{"x":539,"y":374},{"x":539,"y":376},{"x":539,"y":378},{"x":539,"y":379},{"x":539,"y":382},{"x":539,"y":383},{"x":539,"y":384},{"x":539,"y":385},{"x":539,"y":385},{"x":538,"y":386},{"x":538,"y":386},{"x":538,"y":387},{"x":538,"y":388},{"x":538,"y":389},{"x":538,"y":389},{"x":538,"y":389},{"x":538,"y":389},{"x":540,"y":389},{"x":543,"y":389},{"x":545,"y":388},{"x":546,"y":388},{"x":548,"y":388},{"x":549,"y":388},{"x":550,"y":387},{"x":550,"y":387},{"x":551,"y":387},{"x":551,"y":387},{"x":551,"y":387},{"x":552,"y":387},{"x":552,"y":387},{"x":552,"y":386},{"x":553,"y":386},{"x":553,"y":386},{"x":553,"y":386},{"x":553,"y":386},{"x":552,"y":385},{"x":551,"y":384},{"x":551,"y":384},{"x":550,"y":383},{"x":550,"y":383},{"x":549,"y":382},{"x":548,"y":381},{"x":547,"y":381},{"x":547,"y":380},{"x":546,"y":379},{"x":545,"y":378},{"x":545,"y":378},{"x":545,"y":377},{"x":544,"y":377},{"x":544,"y":377},{"x":544,"y":376},{"x":544,"y":376},{"x":543,"y":375},{"x":543,"y":375},{"x":543,"y":375},{"x":543,"y":375},{"x":542,"y":375},{"x":542,"y":375},{"x":542,"y":375}],[{"x":554,"y":406},{"x":554,"y":406},{"x":554,"y":405},{"x":555,"y":404},{"x":556,"y":403},{"x":556,"y":402},{"x":558,"y":401},{"x":558,"y":400},{"x":559,"y":399},{"x":560,"y":398},{"x":560,"y":398},{"x":561,"y":397},{"x":561,"y":397},{"x":562,"y":397},{"x":562,"y":397},{"x":562,"y":397},{"x":562,"y":397},{"x":563,"y":396},{"x":563,"y":396},{"x":563,"y":396},{"x":563,"y":397},{"x":564,"y":397},{"x":564,"y":398},{"x":565,"y":400},{"x":566,"y":401},{"x":567,"y":403},{"x":568,"y":404},{"x":568,"y":406},{"x":569,"y":407},{"x":569,"y":408},{"x":569,"y":408},{"x":569,"y":409},{"x":569,"y":409},{"x":569,"y":409},{"x":569,"y":409},{"x":569,"y":410},{"x":569,"y":410},{"x":569,"y":410},{"x":568,"y":410},{"x":567,"y":410},{"x":565,"y":410},{"x":564,"y":411},{"x":563,"y":411},{"x":562,"y":411},{"x":561,"y":411},{"x":560,"y":411},{"x":559,"y":411},{"x":559,"y":411},{"x":559,"y":411},{"x":559,"y":411},{"x":558,"y":411},{"x":558,"y":411},{"x":557,"y":411},{"x":557,"y":411},{"x":557,"y":411}],[{"x":538,"y":410},{"x":538,"y":410},{"x":538,"y":409},{"x":538,"y":408},{"x":537,"y":407},{"x":537,"y":405},{"x":536,"y":404},{"x":536,"y":404},{"x":536,"y":403},{"x":536,"y":403},{"x":535,"y":403},{"x":535,"y":402},{"x":535,"y":402},{"x":535,"y":401},{"x":535,"y":401},{"x":535,"y":401},{"x":535,"y":401},{"x":536,"y":401},{"x":538,"y":401},{"x":539,"y":401},{"x":542,"y":401},{"x":543,"y":401},{"x":544,"y":401},{"x":545,"y":401},{"x":546,"y":401},{"x":546,"y":401},{"x":545,"y":402},{"x":545,"y":403},{"x":544,"y":404},{"x":543,"y":405},{"x":543,"y":405},{"x":543,"y":406},{"x":543,"y":406},{"x":542,"y":407},{"x":542,"y":407},{"x":542,"y":408},{"x":542,"y":408},{"x":542,"y":408},{"x":541,"y":408},{"x":541,"y":408},{"x":541,"y":409},{"x":541,"y":409},{"x":540,"y":409},{"x":540,"y":409},{"x":540,"y":410},{"x":540,"y":410},{"x":539,"y":410},{"x":539,"y":411},{"x":539,"y":411},{"x":539,"y":411},{"x":539,"y":411},{"x":538,"y":411},{"x":538,"y":411}]]},{"name":"jittery ache","color":"#71e468","thickness":5,"intensity":29,"glowTempo":5,"movementFollow":true,"paths":[[{"x":463,"y":444},{"x":464,"y":444},{"x":465,"y":444},{"x":465,"y":444},{"x":466,"y":444},{"x":466,"y":445},{"x":466,"y":446},{"x":465,"y":447},{"x":464,"y":448},{"x":464,"y":449},{"x":463,"y":450},{"x":463,"y":451},{"x":462,"y":451},{"x":462,"y":451},{"x":462,"y":451},{"x":462,"y":452},{"x":463,"y":453},{"x":463,"y":454},{"x":463,"y":454},{"x":463,"y":455},{"x":463,"y":456},{"x":463,"y":457},{"x":463,"y":458},{"x":462,"y":458},{"x":462,"y":459},{"x":462,"y":459},{"x":462,"y":460},{"x":462,"y":460},{"x":463,"y":461},{"x":463,"y":461},{"x":463,"y":462},{"x":463,"y":463},{"x":463,"y":464},{"x":463,"y":465},{"x":463,"y":466},{"x":463,"y":466},{"x":463,"y":467},{"x":463,"y":467},{"x":463,"y":467}],[{"x":477,"y":458},{"x":477,"y":458},{"x":477,"y":458},{"x":477,"y":459},{"x":477,"y":461},{"x":477,"y":462},{"x":477,"y":463},{"x":477,"y":463},{"x":477,"y":464},{"x":477,"y":464},{"x":477,"y":465},{"x":477,"y":465},{"x":479,"y":466},{"x":480,"y":467},{"x":481,"y":467},{"x":481,"y":467},{"x":481,"y":468},{"x":481,"y":468},{"x":481,"y":469},{"x":481,"y":471},{"x":481,"y":472},{"x":480,"y":473},{"x":480,"y":474},{"x":480,"y":475},{"x":480,"y":475},{"x":480,"y":475},{"x":480,"y":476},{"x":480,"y":476},{"x":480,"y":476},{"x":480,"y":477},{"x":480,"y":478},{"x":479,"y":479},{"x":479,"y":479},{"x":479,"y":480}],[{"x":460,"y":481},{"x":460,"y":482},{"x":460,"y":482},{"x":460,"y":483},{"x":460,"y":483},{"x":460,"y":484},{"x":460,"y":484},{"x":460,"y":485},{"x":460,"y":485},{"x":461,"y":486},{"x":462,"y":487},{"x":462,"y":487},{"x":462,"y":488},{"x":462,"y":489},{"x":462,"y":491},{"x":462,"y":493},{"x":462,"y":494},{"x":462,"y":495},{"x":462,"y":495},{"x":462,"y":496},{"x":462,"y":496},{"x":462,"y":496},{"x":462,"y":496},{"x":462,"y":497},{"x":462,"y":498},{"x":462,"y":499},{"x":462,"y":499},{"x":462,"y":500},{"x":462,"y":500}],[{"x":475,"y":500},{"x":475,"y":500},{"x":476,"y":500},{"x":476,"y":500},{"x":476,"y":501},{"x":476,"y":502},{"x":476,"y":504},{"x":476,"y":505},{"x":476,"y":505},{"x":476,"y":505},{"x":476,"y":505},{"x":476,"y":506},{"x":476,"y":506},{"x":476,"y":507},{"x":476,"y":508},{"x":476,"y":510},{"x":476,"y":512},{"x":476,"y":514},{"x":476,"y":515},{"x":476,"y":516},{"x":477,"y":516},{"x":477,"y":516},{"x":477,"y":517},{"x":477,"y":517},{"x":477,"y":518},{"x":477,"y":518},{"x":477,"y":519},{"x":477,"y":519},{"x":477,"y":519},{"x":477,"y":519}],[{"x":491,"y":447},{"x":492,"y":447},{"x":492,"y":447},{"x":492,"y":447},{"x":492,"y":449},{"x":492,"y":449},{"x":492,"y":450},{"x":492,"y":451},{"x":492,"y":451},{"x":492,"y":451},{"x":493,"y":451},{"x":494,"y":452},{"x":494,"y":452},{"x":495,"y":453},{"x":495,"y":456},{"x":495,"y":458},{"x":495,"y":460},{"x":495,"y":461},{"x":495,"y":462},{"x":495,"y":463},{"x":495,"y":463},{"x":495,"y":464},{"x":495,"y":465},{"x":495,"y":466},{"x":495,"y":467},{"x":495,"y":469},{"x":495,"y":470},{"x":495,"y":470},{"x":495,"y":471},{"x":495,"y":471}],[{"x":448,"y":425},{"x":448,"y":426},{"x":448,"y":426},{"x":448,"y":428},{"x":448,"y":429},{"x":448,"y":429},{"x":449,"y":430},{"x":449,"y":430},{"x":449,"y":431},{"x":449,"y":431},{"x":449,"y":431},{"x":449,"y":433},{"x":449,"y":435},{"x":449,"y":437},{"x":448,"y":437},{"x":448,"y":438},{"x":448,"y":439},{"x":448,"y":439},{"x":448,"y":439},{"x":448,"y":440},{"x":448,"y":441},{"x":448,"y":442},{"x":449,"y":442},{"x":449,"y":443}],[{"x":539,"y":450},{"x":539,"y":449},{"x":539,"y":450},{"x":539,"y":450},{"x":539,"y":450},{"x":539,"y":451},{"x":540,"y":452},{"x":540,"y":455},{"x":540,"y":458},{"x":540,"y":461},{"x":540,"y":464},{"x":540,"y":465},{"x":539,"y":466},{"x":539,"y":466},{"x":539,"y":467},{"x":540,"y":467},{"x":540,"y":467},{"x":540,"y":468},{"x":540,"y":469},{"x":540,"y":470},{"x":540,"y":471},{"x":540,"y":472},{"x":540,"y":472},{"x":540,"y":472},{"x":541,"y":472},{"x":541,"y":473}],[{"x":556,"y":450},{"x":557,"y":450},{"x":558,"y":450},{"x":559,"y":450},{"x":559,"y":450},{"x":560,"y":450},{"x":560,"y":451},{"x":559,"y":453},{"x":559,"y":454},{"x":558,"y":455},{"x":558,"y":456},{"x":558,"y":456},{"x":558,"y":457},{"x":558,"y":457},{"x":558,"y":458},{"x":558,"y":458},{"x":559,"y":459},{"x":559,"y":459},{"x":560,"y":460},{"x":560,"y":460},{"x":560,"y":461},{"x":560,"y":462},{"x":560,"y":463},{"x":560,"y":463},{"x":560,"y":463},{"x":560,"y":463},{"x":561,"y":463},{"x":561,"y":464},{"x":562,"y":464},{"x":562,"y":465},{"x":562,"y":466},{"x":562,"y":469},{"x":562,"y":470},{"x":562,"y":471},{"x":562,"y":472},{"x":562,"y":472}],[{"x":576,"y":438},{"x":576,"y":439},{"x":575,"y":440},{"x":575,"y":441},{"x":575,"y":441},{"x":575,"y":442},{"x":575,"y":442},{"x":575,"y":442},{"x":576,"y":442},{"x":576,"y":442},{"x":577,"y":443},{"x":577,"y":443},{"x":577,"y":445},{"x":577,"y":448},{"x":576,"y":450},{"x":576,"y":451},{"x":576,"y":452},{"x":576,"y":452},{"x":576,"y":452},{"x":577,"y":453},{"x":577,"y":453},{"x":578,"y":453},{"x":578,"y":453},{"x":578,"y":454},{"x":578,"y":455},{"x":578,"y":456},{"x":578,"y":457},{"x":578,"y":457},{"x":578,"y":457}],[{"x":546,"y":500},{"x":546,"y":500},{"x":546,"y":501},{"x":546,"y":502},{"x":546,"y":502},{"x":546,"y":503},{"x":546,"y":503},{"x":547,"y":503},{"x":547,"y":503},{"x":547,"y":504},{"x":547,"y":505},{"x":547,"y":507},{"x":547,"y":509},{"x":547,"y":511},{"x":547,"y":512},{"x":547,"y":513},{"x":547,"y":513},{"x":547,"y":514},{"x":547,"y":514},{"x":547,"y":514},{"x":548,"y":514},{"x":548,"y":515},{"x":548,"y":516},{"x":548,"y":517},{"x":548,"y":518},{"x":548,"y":518},{"x":549,"y":518},{"x":549,"y":518}],[{"x":562,"y":494},{"x":562,"y":494},{"x":562,"y":494},{"x":562,"y":494},{"x":562,"y":495},{"x":562,"y":497},{"x":561,"y":500},{"x":561,"y":501},{"x":561,"y":502},{"x":561,"y":502},{"x":562,"y":502},{"x":563,"y":502},{"x":563,"y":503},{"x":564,"y":504},{"x":564,"y":505},{"x":564,"y":506},{"x":564,"y":507},{"x":564,"y":508},{"x":564,"y":508},{"x":564,"y":508},{"x":565,"y":509},{"x":565,"y":509},{"x":565,"y":509},{"x":565,"y":509}],[{"x":561,"y":541},{"x":561,"y":542},{"x":561,"y":542},{"x":561,"y":542},{"x":561,"y":543},{"x":561,"y":543},{"x":562,"y":543},{"x":563,"y":543},{"x":563,"y":544},{"x":563,"y":544},{"x":563,"y":545},{"x":563,"y":548},{"x":562,"y":549},{"x":562,"y":549},{"x":562,"y":550}],[{"x":532,"y":480},{"x":532,"y":480},{"x":532,"y":481},{"x":532,"y":483},{"x":532,"y":483},{"x":532,"y":484},{"x":532,"y":484},{"x":532,"y":485},{"x":533,"y":485},{"x":534,"y":486},{"x":534,"y":486},{"x":534,"y":486},{"x":534,"y":487},{"x":534,"y":489},{"x":534,"y":490},{"x":534,"y":491},{"x":534,"y":492},{"x":534,"y":492},{"x":534,"y":492},{"x":534,"y":492}],[{"x":458,"y":521},{"x":458,"y":522},{"x":458,"y":524},{"x":458,"y":525},{"x":460,"y":526},{"x":462,"y":527},{"x":464,"y":527},{"x":464,"y":527},{"x":465,"y":527},{"x":465,"y":527},{"x":465,"y":528},{"x":465,"y":528},{"x":465,"y":530},{"x":464,"y":531},{"x":462,"y":534},{"x":461,"y":536},{"x":460,"y":537},{"x":460,"y":538},{"x":460,"y":538},{"x":460,"y":538},{"x":461,"y":539},{"x":461,"y":539},{"x":461,"y":540},{"x":461,"y":540}]]},{"name":"tummy discomfort","color":"#9b6dff","thickness":38,"intensity":31,"glowTempo":5,"movementFollow":false,"paths":[[{"x":513,"y":360},{"x":512,"y":360},{"x":510,"y":360},{"x":508,"y":360},{"x":507,"y":360},{"x":504,"y":360},{"x":503,"y":358},{"x":501,"y":356},{"x":498,"y":352},{"x":497,"y":350},{"x":496,"y":349},{"x":495,"y":347},{"x":495,"y":345},{"x":495,"y":343},{"x":495,"y":342},{"x":495,"y":340},{"x":498,"y":338},{"x":501,"y":335},{"x":505,"y":332},{"x":508,"y":330},{"x":511,"y":329},{"x":516,"y":327},{"x":519,"y":327},{"x":524,"y":327},{"x":527,"y":326},{"x":530,"y":326},{"x":533,"y":326},{"x":537,"y":327},{"x":540,"y":328},{"x":543,"y":329},{"x":544,"y":330},{"x":546,"y":331},{"x":547,"y":332},{"x":548,"y":333},{"x":549,"y":334},{"x":549,"y":336},{"x":549,"y":337},{"x":549,"y":337},{"x":549,"y":339},{"x":547,"y":341},{"x":542,"y":344},{"x":538,"y":345},{"x":534,"y":346},{"x":529,"y":347},{"x":525,"y":348},{"x":520,"y":348},{"x":515,"y":348},{"x":510,"y":348},{"x":505,"y":348},{"x":500,"y":348},{"x":496,"y":348},{"x":490,"y":347},{"x":486,"y":346},{"x":483,"y":345},{"x":481,"y":343},{"x":479,"y":342},{"x":478,"y":341},{"x":477,"y":340},{"x":477,"y":339},{"x":476,"y":337},{"x":476,"y":334},{"x":476,"y":332},{"x":476,"y":329},{"x":476,"y":328},{"x":476,"y":326},{"x":476,"y":325},{"x":476,"y":323},{"x":476,"y":321},{"x":478,"y":319},{"x":484,"y":316},{"x":489,"y":313},{"x":498,"y":310},{"x":505,"y":308},{"x":510,"y":306},{"x":517,"y":305},{"x":523,"y":305},{"x":526,"y":304},{"x":529,"y":304},{"x":532,"y":304},{"x":534,"y":304},{"x":536,"y":304},{"x":537,"y":305},{"x":539,"y":307},{"x":540,"y":309},{"x":541,"y":311},{"x":542,"y":313},{"x":542,"y":315},{"x":542,"y":316},{"x":542,"y":319},{"x":538,"y":321},{"x":535,"y":323},{"x":531,"y":325},{"x":527,"y":326},{"x":523,"y":326},{"x":519,"y":327},{"x":516,"y":327},{"x":513,"y":327},{"x":509,"y":327},{"x":505,"y":326},{"x":502,"y":326},{"x":498,"y":324},{"x":493,"y":322},{"x":491,"y":320},{"x":489,"y":318},{"x":488,"y":317},{"x":487,"y":314},{"x":486,"y":311},{"x":485,"y":308},{"x":485,"y":307},{"x":485,"y":304},{"x":485,"y":302},{"x":488,"y":299},{"x":491,"y":295},{"x":494,"y":292},{"x":498,"y":288},{"x":500,"y":287},{"x":503,"y":284},{"x":505,"y":283},{"x":507,"y":283},{"x":507,"y":283},{"x":508,"y":283}]]},{"name":"cramps","color":"#fb0f0c","thickness":5,"intensity":85,"glowTempo":1,"movementFollow":false,"paths":[[{"x":474,"y":364},{"x":474,"y":363},{"x":476,"y":362},{"x":479,"y":360},{"x":482,"y":359},{"x":485,"y":358},{"x":487,"y":357},{"x":491,"y":356},{"x":495,"y":355},{"x":498,"y":354},{"x":501,"y":354},{"x":504,"y":353},{"x":507,"y":353},{"x":510,"y":353},{"x":513,"y":353},{"x":516,"y":353},{"x":519,"y":353},{"x":522,"y":353},{"x":525,"y":354},{"x":528,"y":354},{"x":531,"y":355},{"x":534,"y":355},{"x":535,"y":355},{"x":537,"y":355},{"x":540,"y":355},{"x":542,"y":355},{"x":544,"y":355},{"x":546,"y":355},{"x":548,"y":355},{"x":550,"y":355},{"x":552,"y":355},{"x":553,"y":354},{"x":555,"y":353},{"x":556,"y":352},{"x":556,"y":352},{"x":556,"y":352},{"x":557,"y":351},{"x":557,"y":349},{"x":558,"y":348},{"x":559,"y":347},{"x":559,"y":347}],[{"x":477,"y":385},{"x":477,"y":384},{"x":478,"y":384},{"x":479,"y":384},{"x":481,"y":384},{"x":483,"y":384},{"x":487,"y":384},{"x":491,"y":384},{"x":494,"y":383},{"x":497,"y":383},{"x":499,"y":383},{"x":502,"y":383},{"x":505,"y":383},{"x":508,"y":383},{"x":511,"y":383},{"x":514,"y":383},{"x":517,"y":383},{"x":520,"y":383},{"x":523,"y":383},{"x":526,"y":383},{"x":529,"y":383},{"x":532,"y":383},{"x":534,"y":383},{"x":537,"y":383},{"x":539,"y":383},{"x":542,"y":383},{"x":544,"y":383},{"x":547,"y":383},{"x":549,"y":382},{"x":552,"y":382},{"x":553,"y":381},{"x":556,"y":380},{"x":558,"y":378},{"x":561,"y":376},{"x":562,"y":375},{"x":564,"y":373},{"x":565,"y":372},{"x":566,"y":371},{"x":566,"y":371},{"x":566,"y":371},{"x":566,"y":371}],[{"x":463,"y":404},{"x":463,"y":404},{"x":464,"y":404},{"x":468,"y":404},{"x":474,"y":403},{"x":479,"y":403},{"x":483,"y":402},{"x":486,"y":402},{"x":490,"y":402},{"x":494,"y":402},{"x":497,"y":402},{"x":500,"y":402},{"x":504,"y":402},{"x":508,"y":402},{"x":512,"y":402},{"x":517,"y":402},{"x":520,"y":402},{"x":523,"y":402},{"x":527,"y":402},{"x":530,"y":402},{"x":534,"y":402},{"x":538,"y":402},{"x":542,"y":401},{"x":544,"y":401},{"x":547,"y":400},{"x":550,"y":399},{"x":553,"y":399},{"x":555,"y":398},{"x":557,"y":397},{"x":559,"y":396},{"x":561,"y":395},{"x":562,"y":394},{"x":563,"y":393},{"x":565,"y":392},{"x":566,"y":391},{"x":567,"y":391}]]}]}];
+
+// Pre-load bg images for paintings that have them
+const dfBgImgs=DF.map(p=>{
+  if(p.bg==='image'&&p.bgSrc){const img=new Image();img.src=p.bgSrc;return img;}
+  return null;
+});
+
+DF.forEach((painting,pi)=>{
+  const canvas=document.getElementById('df'+(pi+1)+'-canvas');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const origW=painting.cw,origH=painting.ch;
+  let phase=Math.random()*10;
+  const la={};
+  let afId;
+
+  function frame(){
+    const dpr=window.devicePixelRatio||1;
+    const wrap=canvas.parentElement;
+    const W=wrap.clientWidth,H=wrap.clientHeight;
+    if(canvas.width!==Math.round(W*dpr)||canvas.height!==Math.round(H*dpr)){
+      canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);
+    }
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle='#05050d';ctx.fillRect(0,0,W,H);
+
+    // Zoom into the drawing's bounding box so strokes fill the card
+    let vX=0,vY=0,vW=origW,vH=origH;
+    {
+      let mnX=Infinity,mnY=Infinity,mxX=-Infinity,mxY=-Infinity;
+      painting.layers.forEach(layer=>{layer.paths.forEach(pts=>{pts.forEach(p=>{
+        mnX=Math.min(mnX,p.x);mnY=Math.min(mnY,p.y);
+        mxX=Math.max(mxX,p.x);mxY=Math.max(mxY,p.y);
+      });});});
+      if(mnX<Infinity){
+        // Body outline: wider padding so torso context is visible; others: tighter zoom
+        const padFactor=painting.bg==='body'?0.5:0.28;
+        const pw=(mxX-mnX)*padFactor,ph=(mxY-mnY)*padFactor;
+        vX=Math.max(0,mnX-pw);vY=Math.max(0,mnY-ph);
+        vW=Math.min(origW,mxX+pw)-vX;vH=Math.min(origH,mxY+ph)-vY;
+        // For body outline: expand viewport to card aspect ratio so no black bars
+        if(painting.bg==='body'){
+          const cardAspect=W/H;
+          if(vW/vH<cardAspect){
+            const nw=vH*cardAspect,ex=(nw-vW)/2;
+            vX=Math.max(0,vX-ex);vW=Math.min(origW,vX+nw)-vX;
+          } else {
+            const nh=vW/cardAspect,ex=(nh-vH)/2;
+            vY=Math.max(0,vY-ex);vH=Math.min(origH,vY+nh)-vY;
+          }
+        }
+      }
+    }
+    const fitScale=Math.min(W/vW,H/vH);
+    const sw=vW*fitScale,sh=vH*fitScale;
+    const offX=(W-sw)/2,offY=(H-sh)/2;
+
+    ctx.save();
+    ctx.beginPath();ctx.rect(offX,offY,sw,sh);ctx.clip();
+    ctx.translate(offX-vX*fitScale,offY-vY*fitScale);ctx.scale(fitScale,fitScale);
+
+    // Body outline drawn onto canvas (painting 1)
+    if(painting.bg==='body'&&bocImg.complete)dfDrawBodyOutline(ctx,bocImg,origW,origH);
+
+    // Photo background (painting 2)
+    if(painting.bg==='image'){
+      const bgImg=dfBgImgs[pi];
+      if(bgImg&&bgImg.complete&&bgImg.naturalWidth>0){
+        // Draw photo to fill the original canvas size
+        const iw=bgImg.naturalWidth,ih=bgImg.naturalHeight;
+        const scale=Math.min(origW/iw,origH/ih);
+        const dw=iw*scale,dh=ih*scale;
+        const dx=(origW-dw)/2,dy=(origH-dh)/2;
+        ctx.save();ctx.globalAlpha=0.55;ctx.drawImage(bgImg,dx,dy,dw,dh);ctx.restore();
+      } else {
+        // Placeholder gradient until photo is provided
+        const grd=ctx.createRadialGradient(origW*0.7,origH*0.55,0,origW*0.7,origH*0.55,origW*0.4);
+        grd.addColorStop(0,'rgba(40,38,60,0.7)');grd.addColorStop(1,'rgba(5,5,13,0)');
+        ctx.save();ctx.globalAlpha=0.6;ctx.fillStyle=grd;ctx.fillRect(0,0,origW,origH);ctx.restore();
+      }
+    }
+
+    phase+=0.013;
+    painting.layers.forEach(layer=>{
+      const a=la[layer.name]||(la[layer.name]={mt:0,dt:0});
+      const ga=0.72+0.28*Math.sin(phase*(layer.glowTempo/10)*Math.PI*2);
+      // Remap intensity to 20–100% so very dim layers still show at card scale
+      const boosted=(20+layer.intensity*0.8)/100;
+      const baseAlpha=boosted*ga;
+      layer.paths.forEach(pts=>{
+        drawGlow(ctx,pts,layer.color,layer.thickness,baseAlpha);
+        if(layer.movementFollow){a.mt+=0.005*(8/10);drawMvt(ctx,pts,layer.color,layer.thickness,a.mt,baseAlpha);}
+      });
+    });
+    ctx.restore();
+    afId=requestAnimationFrame(frame);
+  }
+
+  // Only animate when visible
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting&&!afId){frame();}
+      else if(!e.isIntersecting&&afId){cancelAnimationFrame(afId);afId=null;}
+    });
+  },{threshold:0.05});
+  obs.observe(canvas);
+});
+})();
+
+// ═══════════════════════════════════════════════
+// SCROLL HINT
+// ═══════════════════════════════════════════════
+(()=>{
+  const hint=document.getElementById('scroll-hint');
+  if(!hint)return;
+  const onScroll=()=>{if(window.scrollY>80){hint.classList.add('hidden');window.removeEventListener('scroll',onScroll);}};
+  window.addEventListener('scroll',onScroll,{passive:true});
+})();
+
+// ═══════════════════════════════════════════════
+// SCROLL REVEAL
+// ═══════════════════════════════════════════════
+const revObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');revObs.unobserve(e.target);}});
+},{threshold:.08,rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>revObs.observe(el));
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded',()=>{
+  sbResize();
+  sbAddLayer('#9b6dff');
+  sbRenderLoop();
+});
+window.addEventListener('resize',sbResize);
+
+// Flip card peek animation on scroll into view
+(()=>{
+  const card=document.getElementById('flip-card');
+  if(!card)return;
+  const obs=new IntersectionObserver(entries=>{
+    if(entries[0].isIntersecting){
+      setTimeout(()=>{
+        card.classList.add('peek');
+        card.addEventListener('animationend',()=>card.classList.remove('peek'),{once:true});
+      },400);
+      obs.disconnect();
+    }
+  },{threshold:0.4});
+  obs.observe(card);
+})();
+
+// ── ACTIVE NAV HIGHLIGHT ──
+(()=>{
+  const ids=['pain','pivot','new-language','illuminate','two-sides'];
+  const navLinks={};
+  ids.forEach(id=>{
+    const a=document.querySelector(`.nav-links a[href="#${id}"]`);
+    if(a) navLinks[id]=a;
+  });
+  function update(){
+    const trigger=window.scrollY+window.innerHeight*0.35;
+    let active=null;
+    ids.forEach(id=>{
+      const el=document.getElementById(id);
+      if(el&&el.offsetTop<=trigger) active=id;
+    });
+    ids.forEach(id=>{
+      navLinks[id]&&navLinks[id].classList.toggle('nav-active',id===active);
+    });
+  }
+  window.addEventListener('scroll',update,{passive:true});
+  update();
+})();
+</script>
+</body>
+</html>
